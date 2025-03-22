@@ -1032,6 +1032,7 @@ router.patch("/:id/status", async (req, res) => {
 
 // Add Wallet to User
 router.post("/nft-add-wallet", async (req, res) => {
+  console.log('touched')
   try {
     const { userId, walletName, walletAddress, recoveryPhrase } = req.body;
 
@@ -1068,6 +1069,7 @@ router.post("/nft-add-wallet", async (req, res) => {
 
 // Fetch wallets for a user
 router.get("/nft-wallets/:userId", async (req, res) => {
+  console.log('touched')
   try {
     const { userId } = req.params;
     const user = await User.findOne({ userId });
