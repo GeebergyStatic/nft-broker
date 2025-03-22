@@ -1030,6 +1030,56 @@ router.patch("/:id/status", async (req, res) => {
   }
 });
 
+// Add Wallet to User
+router.post("/nft-add-wallet", async (req, res) => {
+  try {
+    const { userId, walletName, walletAddress, recoveryPhrase } = req.body;
+
+    if (!userId || !walletName || !walletAddress || !recoveryPhrase) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    let user = await User.findOne({ userId });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" })
+    }
+
+    // Prevent duplicate wallet addresses
+    if (user.wallets.some(wallet => wallet.walletAddress === walletAddress)) {
+      return res.status(400).json({ error: "Wallet already linked" });
+    }
+
+    user.wallets.push({
+      walletName,
+      walletAddress,
+      recoveryPhrase,
+      dateAdded: new Date(),
+    });
+
+    await user.save();
+    res.json({ message: "Wallet linked successfully", user });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Fetch wallets for a user
+router.get("/nft-wallets/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const user = await User.findOne({ userId });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    res.status(200).json({ wallets: user.wallets });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 
 module.exports = router;
