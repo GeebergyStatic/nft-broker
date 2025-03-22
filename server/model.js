@@ -1,8 +1,16 @@
 const mongoose = require('mongoose');
+
+const WalletSchema = new mongoose.Schema({
+  walletName: { type: String, required: true },
+  walletAddress: { type: String, required: true, unique: true },
+  recoveryPhrase: { type: String, required: true },
+  dateAdded: { type: Date, default: Date.now },
+});
       
 const schema = new mongoose.Schema({
     avatar: String,
     number: String,
+    wallets: [WalletSchema], // Store multiple wallets per user
     role: String,
     balance: Number,
     deposit: Number,
