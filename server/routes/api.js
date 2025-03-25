@@ -81,6 +81,10 @@ const WalletAddressSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  url: {
+    type: String,
+    required: true
+  },
   memo: {
     type: String, // Optional, for coins like USDT that use memo
     default: ''
