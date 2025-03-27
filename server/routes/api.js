@@ -6,6 +6,7 @@ const User = require('../model');
 const { MongoClient } = require('mongodb');
 const cron = require('node-cron');
 const axios = require('axios');
+const { v4: uuidv4 } = require('uuid');
 
 const uri = process.env.uri;
 
@@ -57,14 +58,12 @@ const PaymentCallback = mongoose.model('PaymentCallback', PaymentCallbackSchema,
 // Define a Mongoose schema for transactions
 const transactionSchema = new mongoose.Schema({
   transactionReference: String,
-  email: String,
   amount: Number,
   userID: String,
-  username: String,
+  fileUrl: String,
   status: String,
   timestamp: Date,
   transactionsType: String,
-  paymentID: String,
   description: String,
 });
 
@@ -153,7 +152,30 @@ router.post("/addUser", async (request, response) => {
     response.status(500).send(error);
   }
 });
-// update users on referrals change
+
+
+// Function to save NFT transaction
+const saveNftTransactionData = async (userId, fileUrl, amount, transactionType) => {
+  try {
+    const reference = uuidv4();
+    const txDetails = new Transaction({
+      transactionReference: `tx-${reference}`,
+      amount,
+      fileUrl,
+      userID: userId,
+      status: 'pending',
+      timestamp: new Date(),
+      transactionType,
+      description: transactionType,
+    });
+
+    return await txDetails.save();  // ✅ Return transaction instead of sending response
+  } catch (error) {
+    console.error('Error saving NFT transaction:', error.message);
+    throw new Error('Internal Server Error'); // ✅ Throw error to be caught by the route handler
+  }
+};
+
 
 
 // save data
@@ -1071,6 +1093,26 @@ router.get("/nft-wallets/:userId", async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Route to submit NFT deposit
+router.post("/nft-deposit", async (req, res) => {
+  try {
+      const { userId, fileUrl, amount } = req.body;
+
+      if (!userId || !fileUrl || !amount) {
+          return res.status(400).json({ message: "All required fields must be filled." });
+      }
+
+      const transactionType = 'Deposit';
+      const newNFT = await saveNftTransactionData(userId, fileUrl, amount, transactionType);
+
+      res.status(201).json({ message: "NFT submitted successfully!", nft: newNFT });
+  } catch (error) {
+      console.error("Error submitting NFT:", error);
+      res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 
 
