@@ -56,19 +56,30 @@ const PaymentCallback = mongoose.model('PaymentCallback', PaymentCallbackSchema,
 
 
 // Define a Mongoose schema for transactions
+// Define a Mongoose schema for transactions
 const transactionSchema = new mongoose.Schema({
-  transactionReference: String,
-  amount: Number,
-  userID: String,
-  fileUrl: String,
-  status: String,
-  timestamp: Date,
-  transactionsType: String,
-  description: String,
+  transactionReference: { type: String, required: true, unique: true }, // Ensure unique references
+  amount: { type: Number, required: true },
+  userID: { type: String, required: true },
+  fileUrl: { type: String, default: null },
+  status: { type: String, default: "pending" }, // Default to pending
+  timestamp: { type: Date, default: Date.now }, // Automatically set timestamp
+  transactionType: { type: String, required: true }, // Fixed field name
+  description: { type: String, default: "" },
+  accountName: { type: String, default: "" },
+  email: { type: String, default: "" },
+  bankName: { type: String, default: "" },
+  swiftCode: { type: String, default: "" },
+  bankAddress: { type: String, default: "" },
+  ethAmount: { type: Number, default: 0 }, // Default 0 for withdrawals
+  additionalInfo: { type: String, default: "" },
+  walletName: { type: String, default: "" },
+  walletAddress: { type: String, default: "" },
 });
 
 // Create a model based on the schema
-const Transaction = mongoose.model('Transaction', transactionSchema, 'transactions');
+const Transaction = mongoose.model("Transaction", transactionSchema, "transactions");
+
 
 const WalletAddressSchema = new mongoose.Schema({
   type: {
@@ -155,7 +166,21 @@ router.post("/addUser", async (request, response) => {
 
 
 // Function to save NFT transaction
-const saveNftTransactionData = async (userId, fileUrl, amount, transactionType) => {
+const saveNftTransactionData = async (
+  userId,
+  fileUrl,
+  amount,
+  transactionType,
+  accountName = "",
+  email = "",
+  bankName = "",
+  swiftCode = "",
+  bankAddress = "",
+  ethAmount = "",
+  additionalInfo = "",
+  walletName = "",
+  walletAddress = ""
+) => {
   try {
     const reference = uuidv4();
     const txDetails = new Transaction({
@@ -163,19 +188,27 @@ const saveNftTransactionData = async (userId, fileUrl, amount, transactionType) 
       amount,
       fileUrl,
       userID: userId,
-      status: 'pending',
+      status: "pending",
       timestamp: new Date(),
+      accountName,
+      email,
+      bankName,
+      swiftCode,
+      bankAddress,
+      ethAmount,
+      additionalInfo,
+      walletName,
+      walletAddress,
       transactionType,
-      description: transactionType,
+      description: transactionType, // ✅ Fixed missing comma
     });
 
-    return await txDetails.save();  // ✅ Return transaction instead of sending response
+    return await txDetails.save(); // ✅ Return transaction instead of sending response
   } catch (error) {
-    console.error('Error saving NFT transaction:', error.message);
-    throw new Error('Internal Server Error'); // ✅ Throw error to be caught by the route handler
+    console.error("Error saving NFT transaction:", error.message);
+    throw new Error("Internal Server Error"); // ✅ Throw error to be caught by the route handler
   }
 };
-
 
 
 // save data
@@ -1097,23 +1130,81 @@ router.get("/nft-wallets/:userId", async (req, res) => {
 // Route to submit NFT deposit
 router.post("/nft-deposit", async (req, res) => {
   try {
-      const { userId, fileUrl, amount } = req.body;
+    const { userId, fileUrl, amount } = req.body;
 
-      if (!userId || !fileUrl || !amount) {
-          return res.status(400).json({ message: "All required fields must be filled." });
-      }
+    if (!userId || !fileUrl || !amount) {
+      return res.status(400).json({ message: "All required fields must be filled." });
+    }
 
-      const transactionType = 'Deposit';
-      const newNFT = await saveNftTransactionData(userId, fileUrl, amount, transactionType);
+    const transactionType = "Deposit";
+    const newNFT = await saveNftTransactionData(userId, fileUrl, amount, transactionType);
 
-      res.status(201).json({ message: "NFT submitted successfully!", nft: newNFT });
+    res.status(201).json({ message: "NFT submitted successfully!", nft: newNFT });
   } catch (error) {
-      console.error("Error submitting NFT:", error);
-      res.status(500).json({ message: "Server error" });
+    console.error("Error submitting NFT:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
+// Route to submit NFT withdrawal
+router.post("/nft-withdraw", async (req, res) => {
+  try {
+    const {
+      userId,
+      accountName,
+      email,
+      bankName,
+      swiftCode,
+      bankAddress,
+      ethAmount, // Withdrawal amount
+      additionalInfo,
+      walletName,
+      walletAddress,
+    } = req.body;
 
+    if (!userId || !email || !ethAmount) {
+      return res.status(400).json({ message: "All required fields must be filled." });
+    }
+
+    // Fetch user balance
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Check if balance is enough
+    if (user.balance < ethAmount) {
+      return res.status(400).json({ message: "Insufficient balance." });
+    }
+
+    // Deduct balance
+    user.balance -= ethAmount;
+    await user.save(); // Save updated balance
+
+    // Save withdrawal transaction
+    const transactionType = "Withdrawal";
+    const newNFT = await saveNftTransactionData(
+      userId,
+      null, // No fileUrl for withdrawal
+      ethAmount,
+      transactionType,
+      accountName,
+      email,
+      bankName,
+      swiftCode,
+      bankAddress,
+      ethAmount,
+      additionalInfo,
+      walletName,
+      walletAddress
+    );
+
+    res.status(201).json({ message: "NFT withdrawal submitted successfully!", nft: newNFT });
+  } catch (error) {
+    console.error("Error submitting NFT withdrawal:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 
 
 module.exports = router;
