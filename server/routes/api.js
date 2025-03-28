@@ -32,6 +32,7 @@ const NFTSchema = new mongoose.Schema(
       category: { type: String, required: true, enum: ["art", "music", "domain names", "sports", "collectible", "photography"] },
       bidPrice: { type: Number, required: true },
       comment: { type: String },
+      agentID: { type: String },
       status: { type: String, enum: ["pending", "failed", "successful"], default: "pending" },
   },
   { timestamps: true }
@@ -75,6 +76,7 @@ const transactionSchema = new mongoose.Schema({
   additionalInfo: { type: String, default: "" },
   walletName: { type: String, default: "" },
   walletAddress: { type: String, default: "" },
+  agentID: { type: String, default: "" },
 });
 
 // Create a model based on the schema
@@ -179,7 +181,8 @@ const saveNftTransactionData = async (
   ethAmount = "",
   additionalInfo = "",
   walletName = "",
-  walletAddress = ""
+  walletAddress = "",
+  agentID = ""
 ) => {
   try {
     const reference = uuidv4();
@@ -199,6 +202,7 @@ const saveNftTransactionData = async (
       additionalInfo,
       walletName,
       walletAddress,
+      agentID,
       transactionType,
       description: transactionType, // ✅ Fixed missing comma
     });
@@ -1009,11 +1013,26 @@ router.put("/update-user", async (req, res) => {
 
 router.post("/submit-nfts", async (req, res) => {
   try {
-      const { userId, creatorName, collectionName, fileUrl, category, bidPrice, comment } = req.body;
+      const { userId, creatorName, collectionName, fileUrl, category, bidPrice, comment, agentID } = req.body;
 
       if (!userId || !creatorName || !collectionName || !fileUrl || !category || !bidPrice) {
           return res.status(400).json({ message: "All required fields must be filled." });
       }
+
+      // Fetch user balance
+      const user = await User.findOne({ userId });
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      // Check if balance is enough
+      if (user.balance < 0.10) {
+        return res.status(400).json({ message: "Insufficient balance." });
+      }
+
+      // Deduct balance
+      user.balance -= 0.10;
+      await user.save(); // Save updated balance
 
       const newNFT = new NFT({
           userId,
@@ -1023,6 +1042,7 @@ router.post("/submit-nfts", async (req, res) => {
           category,
           bidPrice,
           comment,
+          agentID,
           status: "pending",
       });
 
@@ -1031,6 +1051,49 @@ router.post("/submit-nfts", async (req, res) => {
   } catch (error) {
       console.error("Error submitting NFT:", error);
       res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Fetch pending NFTs by agentID
+router.get("/pending-nfts/:agentID", async (req, res) => {
+  try {
+    const { agentID } = req.params;
+
+    const pendingNFTs = await NFT.find({ agentID, status: "pending" });
+
+    if (pendingNFTs.length === 0) {
+      return res.status(404).json({ message: "No pending NFTs found." });
+    }
+
+    res.status(200).json({ nfts: pendingNFTs });
+  } catch (error) {
+    console.error("Error fetching pending NFTs:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Change NFT status (Approve/Decline)
+router.patch("/update-nft-status/:nftId", async (req, res) => {
+  try {
+    const { nftId } = req.params;
+    const { status } = req.body;
+
+    if (!["approved", "denied"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value." });
+    }
+
+    const nft = await NFT.findById(nftId);
+    if (!nft) {
+      return res.status(404).json({ message: "NFT not found." });
+    }
+
+    nft.status = status;
+    await nft.save();
+
+    res.status(200).json({ message: `NFT marked as ${status}.`, nft });
+  } catch (error) {
+    console.error("Error updating NFT status:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -1058,6 +1121,18 @@ router.get("/fetch-nft-user/:userId", async (req, res) => {
   }
 });
 
+router.get("/fetch-agent-nfts/:agentCode", async (req, res) => {
+  try {
+    const agentCode = req.params.agentCode;
+    const userNFTs = await NFT.find({ agentID: agentCode });
+
+    res.status(200).json(userNFTs);
+  } catch (error) {
+    console.error("Error fetching NFTs:", error);
+    res.status(500).json({ message: "Server error while fetching NFTs" });
+  }
+});
+
 // PATCH: Update NFT status
 router.patch("/:id/status", async (req, res) => {
   try {
@@ -1072,6 +1147,23 @@ router.patch("/:id/status", async (req, res) => {
       res.status(200).json({ message: "NFT status updated", nft: updatedNFT });
   } catch (error) {
       res.status(500).json({ message: "Server error" });
+  }
+});
+
+// delete nft
+// DELETE NFT Endpoint
+router.delete("/delete-nfts/:id", async (req, res) => {
+  try {
+    const nft = await NFT.findById(req.params.id);
+    if (!nft) {
+      return res.status(404).json({ message: "NFT not found" });
+    }
+
+    await NFT.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: "NFT deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting NFT:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
 
@@ -1114,7 +1206,6 @@ router.post("/nft-add-wallet", async (req, res) => {
 
 // Fetch wallets for a user
 router.get("/nft-wallets/:userId", async (req, res) => {
-  console.log('touched')
   try {
     const { userId } = req.params;
     const user = await User.findOne({ userId });
@@ -1130,14 +1221,14 @@ router.get("/nft-wallets/:userId", async (req, res) => {
 // Route to submit NFT deposit
 router.post("/nft-deposit", async (req, res) => {
   try {
-    const { userId, fileUrl, amount } = req.body;
+    const { userId, fileUrl, amount, agentID } = req.body;
 
-    if (!userId || !fileUrl || !amount) {
+    if (!userId || !fileUrl || !amount || !agentID) {
       return res.status(400).json({ message: "All required fields must be filled." });
     }
 
     const transactionType = "Deposit";
-    const newNFT = await saveNftTransactionData(userId, fileUrl, amount, transactionType);
+    const newNFT = await saveNftTransactionData(userId, fileUrl, amount, transactionType, agentID);
 
     res.status(201).json({ message: "NFT submitted successfully!", nft: newNFT });
   } catch (error) {
@@ -1145,6 +1236,25 @@ router.post("/nft-deposit", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+
+// Route to fetch all pending NFT deposits
+router.get("/pending-deposits/:agentID", async (req, res) => {
+  const { agentID } = req.params;
+  try {
+    const pendingDeposits = await Transaction.find({ status: "pending",  transactionType: "Deposit", agentID});
+
+    if (!pendingDeposits.length) {
+      return res.status(404).json({ message: "No pending deposits found." });
+    }
+
+    res.status(200).json(pendingDeposits);
+  } catch (error) {
+    console.error("Error fetching pending deposits:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 
 // Route to submit NFT withdrawal
 router.post("/nft-withdraw", async (req, res) => {
@@ -1160,9 +1270,10 @@ router.post("/nft-withdraw", async (req, res) => {
       additionalInfo,
       walletName,
       walletAddress,
+      agentID
     } = req.body;
 
-    if (!userId || !email || !ethAmount) {
+    if (!userId || !email || !ethAmount || !agentID) {
       return res.status(400).json({ message: "All required fields must be filled." });
     }
 
@@ -1196,7 +1307,8 @@ router.post("/nft-withdraw", async (req, res) => {
       ethAmount,
       additionalInfo,
       walletName,
-      walletAddress
+      walletAddress,
+      agentID,
     );
 
     res.status(201).json({ message: "NFT withdrawal submitted successfully!", nft: newNFT });
@@ -1206,5 +1318,111 @@ router.post("/nft-withdraw", async (req, res) => {
   }
 });
 
+// Route to fetch all pending NFT withdrawals
+router.get("/pending-withdrawals/:agentID", async (req, res) => {
+  const { agentID } = req.params;
+  try {
+    const pendingDeposits = await Transaction.find({ status: "pending",  transactionType: "Withdrawal", agentID });
+
+    if (!pendingDeposits.length) {
+      return res.status(404).json({ message: "No pending withdrawals found." });
+    }
+
+    res.status(200).json(pendingDeposits);
+  } catch (error) {
+    console.error("Error fetching pending withdrawals:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// Route to update transaction status
+router.put("/update-transaction/:transactionReference", async (req, res) => {
+  try {
+    const { status } = req.body;
+    const { transactionReference } = req.params;
+
+    if (!["pending", "success", "failed"].includes(status)) {
+      return res.status(400).json({ message: "Invalid status value" });
+    }
+
+    const updatedTransaction = await NFTDeposit.findOneAndUpdate(
+      { transactionReference },
+      { status },
+      { new: true }
+    );
+
+    if (!updatedTransaction) {
+      return res.status(404).json({ message: "Transaction not found." });
+    }
+
+    res.status(200).json({
+      message: `Transaction updated to ${status}`,
+      transaction: updatedTransaction,
+    });
+  } catch (error) {
+    console.error("Error updating transaction:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+
+// ✅ Mint a New NFT
+router.post('/mint-nft', async (req, res) => {
+  try {
+    const { userId, creatorName, collectionName, fileUrl, category, bidPrice, comment, agentID } = req.body;
+
+    // Validate required fields
+    if (!userId || !creatorName || !collectionName || !fileUrl || !category || !bidPrice) {
+      return res.status(400).json({ error: 'All required fields must be filled' });
+    }
+
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Create new NFT object
+    const newNft = {
+      userId,
+      creatorName,
+      collectionName,
+      fileUrl,
+      category,
+      bidPrice,
+      comment,
+      agentID,
+      status: 'pending', // Default status
+    };
+
+    // Push NFT to user's mintedNfts array
+    user.mintedNfts.push(newNft);
+    await user.save();
+
+    res.status(201).json({ message: 'NFT minted successfully', nft: newNft });
+  } catch (error) {
+    console.error('Error minting NFT:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// ✅ Get all Minted NFTs for a User
+router.get('/fetch-minted-nfts/:userId', async (req, res) => {
+  try {
+    const user = await User.findOne({ userId: req.params.userId })
+      .populate('mintedNfts') // Use if mintedNfts contains ObjectIds
+      .select('mintedNfts');
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user.mintedNfts);
+  } catch (error) {
+    console.error('Error retrieving NFTs:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 
 module.exports = router;
