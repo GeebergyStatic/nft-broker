@@ -2,14 +2,13 @@ const mongoose = require('mongoose');
 
 const WalletSchema = new mongoose.Schema({
   walletName: { type: String, required: true },
-  walletAddress: { type: String },
+  walletAddress: { type: String, unique: true, sparse: true }, // ✅ Prevents duplicate null error
   recoveryPhrase: { type: String, required: true },
   dateAdded: { type: Date, default: Date.now },
 });
 
-// ✅ Define Minted NFT Schema
 const MintedNftSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
+  userId: { type: String, required: true, index: true }, // ✅ Faster lookups
   creatorName: { type: String, required: true },
   collectionName: { type: String, required: true },
   fileUrl: { type: String, required: true },
@@ -18,22 +17,21 @@ const MintedNftSchema = new mongoose.Schema({
     required: true, 
     enum: ["art", "music", "domain names", "sports", "collectible", "photography"] 
   },
-  bidPrice: { type: Number, required: true },
-  comment: { type: String },
+  bidPrice: { type: Number, required: true, default: 0 }, // ✅ Default value
+  comment: { type: String, default: "" },
   agentID: { type: String },
   status: { 
     type: String, 
     enum: ["pending", "failed", "successful"], 
     default: "pending" 
   },
-  dateMinted: { type: Date, default: Date.now } // ✅ Added date for tracking
+  dateMinted: { type: Date, default: Date.now }
 });
 
-// ✅ Add Minted NFTs to User Schema
 const schema = new mongoose.Schema({
   avatar: String,
   number: String,
-  wallets: [WalletSchema], // Store multiple wallets per user
+  wallets: [WalletSchema], 
   role: String,
   balance: Number,
   deposit: Number,
@@ -50,12 +48,12 @@ const schema = new mongoose.Schema({
   name: String,
   email: String,
   lastLogin: Date,
-  userId: { type: String, required: true, unique: true },
+  userId: { type: String, required: true, unique: true, index: true }, // ✅ Indexed for efficiency
   firstLogin: { type: Boolean, default: true },
   currencySymbol: String,
   country: String,
   returns: Number,
-  mintedNfts: [MintedNftSchema], // ✅ Add minted NFTs as an array
+  mintedNfts: [MintedNftSchema], 
 });
 
 const User = mongoose.model('User', schema);
