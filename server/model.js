@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const WalletSchema = new mongoose.Schema({
-  walletName: { type: String, required: true, default: 'none' },
-  walletAddress: { type: String, default: 'none' }, // ✅ Prevents duplicate null error
-  recoveryPhrase: { type: String, required: true, default: 'none' },
+  walletName: { type: String, required: true },
+  // walletAddress: { type: String, unique: true, sparse: true },
+  recoveryPhrase: { type: String, required: true },
   dateAdded: { type: Date, default: Date.now },
 });
 
