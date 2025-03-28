@@ -1228,7 +1228,22 @@ router.post("/nft-deposit", async (req, res) => {
     }
 
     const transactionType = "Deposit";
-    const newNFT = await saveNftTransactionData(userId, fileUrl, amount, transactionType, agentID);
+    const newNFT = await saveNftTransactionData(
+      userId,
+      fileUrl,
+      amount,
+      transactionType,
+      "", // accountName
+      "", // email
+      "", // bankName
+      "", // swiftCode
+      "", // bankAddress
+      "", // ethAmount
+      "", // additionalInfo
+      "", // walletName
+      "", // walletAddress
+      agentID
+    );
 
     res.status(201).json({ message: "NFT submitted successfully!", nft: newNFT });
   } catch (error) {
@@ -1236,6 +1251,7 @@ router.post("/nft-deposit", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 // Route to fetch all pending NFT deposits
@@ -1304,11 +1320,11 @@ router.post("/nft-withdraw", async (req, res) => {
       bankName,
       swiftCode,
       bankAddress,
-      ethAmount,
+      ethAmount, // ✅ Correct position
       additionalInfo,
       walletName,
       walletAddress,
-      agentID,
+      agentID // ✅ agentID at correct position
     );
 
     res.status(201).json({ message: "NFT withdrawal submitted successfully!", nft: newNFT });
