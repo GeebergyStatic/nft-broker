@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const WalletSchema = new mongoose.Schema({
   walletName: { type: String, required: true },
-  walletAddress: { type: String, required: true, unique: true },
+  walletAddress: { type: String },
   recoveryPhrase: { type: String, required: true },
   dateAdded: { type: Date, default: Date.now },
 });
