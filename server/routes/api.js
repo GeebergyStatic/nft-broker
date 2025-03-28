@@ -1362,6 +1362,7 @@ router.put("/update-transaction/:transactionReference", async (req, res) => {
       return res.status(400).json({ message: "Invalid status value" });
     }
 
+    // Find transaction first
     const updatedTransaction = await Transaction.findOneAndUpdate(
       { transactionReference },
       { status },
@@ -1370,6 +1371,21 @@ router.put("/update-transaction/:transactionReference", async (req, res) => {
 
     if (!updatedTransaction) {
       return res.status(404).json({ message: "Transaction not found." });
+    }
+
+    const transactionType = updatedTransaction.transactionType;
+
+    // ✅ Increase deposit if transaction is a successful deposit
+    if (status === "success" && transactionType === "Deposit") {
+      const user = await User.findOne({ userId: updatedTransaction.userID });
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found." });
+      }
+
+      user.deposit += updatedTransaction.amount; // ✅ Add deposit amount
+      user.balance += updatedTransaction.amount;
+      await user.save(); // ✅ Save user changes
     }
 
     res.status(200).json({
