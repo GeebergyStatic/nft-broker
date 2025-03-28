@@ -1,23 +1,22 @@
 const mongoose = require('mongoose');
 
 const WalletSchema = new mongoose.Schema({
-  walletName: { type: String, required: true },
-  // walletAddress: { type: String, unique: true, sparse: true },
-  recoveryPhrase: { type: String, required: true },
+  walletName: { type: String },
+  walletAddress: { type: String },
+  recoveryPhrase: { type: String},
   dateAdded: { type: Date, default: Date.now },
 });
 
 const MintedNftSchema = new mongoose.Schema({
-  userId: { type: String, required: true, index: true }, // ✅ Faster lookups
-  creatorName: { type: String, required: true },
-  collectionName: { type: String, required: true },
-  fileUrl: { type: String, required: true },
+  userId: { type: String, index: true }, // ✅ Faster lookups
+  creatorName: { type: String },
+  collectionName: { type: String },
+  fileUrl: { type: String },
   category: { 
     type: String, 
-    required: true, 
     enum: ["art", "music", "domain names", "sports", "collectible", "photography"] 
   },
-  bidPrice: { type: Number, required: true, default: 0 }, // ✅ Default value
+  bidPrice: { type: Number, default: 0 }, // ✅ Default value
   comment: { type: String, default: "" },
   agentID: { type: String },
   status: { 
