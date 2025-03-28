@@ -33,7 +33,7 @@ const NFTSchema = new mongoose.Schema(
       bidPrice: { type: Number, required: true },
       comment: { type: String },
       agentID: { type: String },
-      status: { type: String, enum: ["pending", "failed", "successful"], default: "pending" },
+      status: { type: String, enum: ["pending", "failed", "successful", "approved", "denied"], default: "pending" },
   },
   { timestamps: true }
 );
@@ -1362,7 +1362,7 @@ router.put("/update-transaction/:transactionReference", async (req, res) => {
       return res.status(400).json({ message: "Invalid status value" });
     }
 
-    const updatedTransaction = await NFTDeposit.findOneAndUpdate(
+    const updatedTransaction = await Transaction.findOneAndUpdate(
       { transactionReference },
       { status },
       { new: true }
