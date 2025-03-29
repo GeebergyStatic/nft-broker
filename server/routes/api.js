@@ -1299,13 +1299,14 @@ router.post("/nft-withdraw", async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
+    const totalCharge = ethAmount + 0.10;
     // Check if balance is enough
-    if (user.balance < ethAmount) {
+    if (user.balance < totalCharge) {
       return res.status(400).json({ message: "Insufficient balance." });
     }
 
     // Deduct balance
-    user.balance -= ethAmount;
+    user.balance -= totalCharge;
     await user.save(); // Save updated balance
 
     // Save withdrawal transaction
