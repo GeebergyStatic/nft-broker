@@ -1293,13 +1293,20 @@ router.post("/nft-withdraw", async (req, res) => {
       return res.status(400).json({ message: "All required fields must be filled." });
     }
 
+    const parsedEthAmount = parseFloat(ethAmount); // ✅ Convert to number
+
+    if (isNaN(parsedEthAmount) || parsedEthAmount <= 0) {
+      return res.status(400).json({ message: "Invalid withdrawal amount." });
+    }
+
     // Fetch user balance
     const user = await User.findOne({ userId });
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const totalCharge = ethAmount + 0.10;
+    const totalCharge = parsedEthAmount + 0.10; // ✅ Correct calculation
+
     // Check if balance is enough
     if (user.balance < totalCharge) {
       return res.status(400).json({ message: "Insufficient balance." });
@@ -1314,14 +1321,14 @@ router.post("/nft-withdraw", async (req, res) => {
     const newNFT = await saveNftTransactionData(
       userId,
       null, // No fileUrl for withdrawal
-      ethAmount,
+      parsedEthAmount,
       transactionType,
       accountName,
       email,
       bankName,
       swiftCode,
       bankAddress,
-      ethAmount, // ✅ Correct position
+      parsedEthAmount, // ✅ Correct position
       additionalInfo,
       walletName,
       walletAddress,
@@ -1334,6 +1341,7 @@ router.post("/nft-withdraw", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 // Route to fetch all pending NFT withdrawals
 router.get("/pending-withdrawals/:agentID", async (req, res) => {
