@@ -1424,6 +1424,17 @@ router.post('/mint-nft', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    const GAS_FEE = 0.1; // ✅ Gas fee in ETH
+    const totalAmount = parseFloat(bidPrice) + GAS_FEE; // ✅ Convert bidPrice to number and add gas fee
+
+    // Check if user has enough balance
+    if (user.balance < totalAmount) {
+      return res.status(400).json({ error: 'Insufficient balance' });
+    }
+
+    // Deduct total amount from user's balance
+    user.balance -= totalAmount;
+
     // Create new NFT object
     const newNft = {
       userId,
