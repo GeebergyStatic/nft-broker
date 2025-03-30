@@ -1,6 +1,5 @@
 // my-app/server/routes/api.js
 const express = require('express');
-const nodemailer = require('nodemailer');
 const mongoose = require('mongoose');
 const router = express.Router();
 const User = require('../model');
@@ -1478,34 +1477,34 @@ router.get('/fetch-minted-nfts/:userId', async (req, res) => {
   }
 });
 
-router.post('/send-email', async (req, res) => {
-  const { customName, customEmail, customMessage } = req.body;
+// router.post('/send-email', async (req, res) => {
+//   const { customName, customEmail, customMessage } = req.body;
 
-  // Set up Gmail SMTP transporter
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'obeingilbert3884@gmail.com', // Your Gmail address
-      pass: process.env.gmail_pass,   // Your Gmail password (or App password if 2FA enabled)
-    },
-  });
+//   // Set up Gmail SMTP transporter
+//   const transporter = nodemailer.createTransport({
+//     service: 'gmail',
+//     auth: {
+//       user: 'obeingilbert3884@gmail.com', // Your Gmail address
+//       pass: process.env.gmail_pass,   // Your Gmail password (or App password if 2FA enabled)
+//     },
+//   });
 
-  // Email options
-  const mailOptions = {
-    from: customEmail,
-    to: 'oremifoundation.ng@gmail.com',  // Your email where you want to receive the message
-    subject: `Message from ${customName}`,
-    text: `Message from: ${customName}\nEmail: ${customEmail}\n\nMessage:\n${customMessage}`,
-  };
+//   // Email options
+//   const mailOptions = {
+//     from: customEmail,
+//     to: 'oremifoundation.ng@gmail.com',  // Your email where you want to receive the message
+//     subject: `Message from ${customName}`,
+//     text: `Message from: ${customName}\nEmail: ${customEmail}\n\nMessage:\n${customMessage}`,
+//   };
 
-  try {
-    // Send email
-    await transporter.sendMail(mailOptions);
-    res.status(200).send('Email sent successfully');
-  } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).send('Error sending email');
-  }
-});
+//   try {
+//     // Send email
+//     await transporter.sendMail(mailOptions);
+//     res.status(200).send('Email sent successfully');
+//   } catch (error) {
+//     console.error('Error sending email:', error);
+//     res.status(500).send('Error sending email');
+//   }
+// });
 
 module.exports = router;
