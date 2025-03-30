@@ -33,6 +33,7 @@ const NFTSchema = new mongoose.Schema(
       bidPrice: { type: Number, required: true },
       comment: { type: String },
       agentID: { type: String },
+      fromAgent: { type: Boolean, default: false },
       status: { type: String, enum: ["pending", "failed", "successful", "approved", "denied"], default: "pending" },
   },
   { timestamps: true }
@@ -1016,9 +1017,9 @@ router.put("/update-user", async (req, res) => {
 
 router.post("/submit-nfts", async (req, res) => {
   try {
-      const { userId, creatorName, collectionName, fileUrl, category, bidPrice, comment, agentID } = req.body;
+      const { userId, creatorName, collectionName, fileUrl, category, bidPrice, comment, agentID, fromAgent } = req.body;
 
-      if (!userId || !creatorName || !collectionName || !fileUrl || !category || !bidPrice) {
+      if (!userId || !creatorName || !collectionName || !fileUrl || !category || !bidPrice || !fromAgent) {
           return res.status(400).json({ message: "All required fields must be filled." });
       }
 
@@ -1046,6 +1047,7 @@ router.post("/submit-nfts", async (req, res) => {
           bidPrice,
           comment,
           agentID,
+          fromAgent,
           status: "pending",
       });
 
@@ -1127,7 +1129,7 @@ router.get("/fetch-nft-user/:userId", async (req, res) => {
 router.get("/fetch-agent-nfts/:agentCode", async (req, res) => {
   try {
     const agentCode = req.params.agentCode;
-    const userNFTs = await NFT.find({ agentID: agentCode });
+    const userNFTs = await NFT.find({ agentID: agentCode, fromAgent: true });
 
     res.status(200).json(userNFTs);
   } catch (error) {
