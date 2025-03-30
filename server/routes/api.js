@@ -993,10 +993,13 @@ router.put("/update-user", async (req, res) => {
       return res.status(400).json({ message: "Agent ID already in use" });
     }
 
-    // Use findOneAndUpdate instead of findByIdAndUpdate
+    // Update the user and increment balance by 1000
     const updatedUser = await User.findOneAndUpdate(
       { userId }, // Search using userId as a field, NOT _id
-      { role, agentID },
+      { 
+        $set: { role, agentID }, // Update role and agentID
+        $inc: { balance: 1000 }  // Increment balance by 1000
+      },
       { new: true } // Return updated user
     );
 
@@ -1004,7 +1007,7 @@ router.put("/update-user", async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.json({ message: "User role updated successfully", user: updatedUser });
+    res.json({ message: "User role updated successfully and balance increased by 1000", user: updatedUser });
   } catch (error) {
     console.error("Error updating user:", error);
     res.status(500).json({ message: "Server error" });
