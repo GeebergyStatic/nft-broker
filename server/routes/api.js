@@ -1019,8 +1019,8 @@ router.post("/submit-nfts", async (req, res) => {
   try {
       const { userId, creatorName, collectionName, fileUrl, category, bidPrice, comment, agentID, fromAgent } = req.body;
 
-      if (!userId || !creatorName || !collectionName || !fileUrl || !category || !bidPrice || !fromAgent) {
-          return res.status(400).json({ message: "All required fields must be filled." });
+      if (!userId || !creatorName || !collectionName || !fileUrl || !category || !bidPrice || fromAgent === undefined) {
+        return res.status(400).json({ message: "All required fields must be filled." });
       }
 
       // Fetch user balance
