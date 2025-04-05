@@ -1126,10 +1126,25 @@ router.get("/fetch-nft-user/:userId", async (req, res) => {
   }
 });
 
-router.get("/fetch-agent-nfts/:agentCode", async (req, res) => {
+router.get("/fetch-agent-nfts/:agentCode/:userId", async (req, res) => {
   try {
-    const agentCode = req.params.agentCode;
-    const userNFTs = await NFT.find({ agentID: agentCode, fromAgent: true });
+    const { agentCode, userId } = req.params;
+
+    // Fetch the user
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Get fileUrls of already minted NFTs
+    const mintedFileUrls = user.mintedNfts.map(nft => nft.fileUrl);
+
+    // Fetch NFTs from the agent that haven't been minted by this user
+    const userNFTs = await NFT.find({
+      agentID: agentCode,
+      fromAgent: true,
+      fileUrl: { $nin: mintedFileUrls },
+    });
 
     res.status(200).json(userNFTs);
   } catch (error) {
@@ -1137,6 +1152,7 @@ router.get("/fetch-agent-nfts/:agentCode", async (req, res) => {
     res.status(500).json({ message: "Server error while fetching NFTs" });
   }
 });
+
 
 // PATCH: Update NFT status
 router.patch("/:id/status", async (req, res) => {
