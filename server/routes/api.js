@@ -34,7 +34,7 @@ const NFTSchema = new mongoose.Schema(
       comment: { type: String },
       agentID: { type: String },
       fromAgent: { type: Boolean, default: false },
-      status: { type: String, enum: ["pending", "failed", "successful", "approved", "denied"], default: "pending" },
+      status: { type: String, enum: ["pending", "failed", "successful", "approved", "on sale", "sold", "denied"], default: "pending" },
   },
   { timestamps: true }
 );
@@ -1064,7 +1064,7 @@ router.get("/pending-nfts/:agentID", async (req, res) => {
   try {
     const { agentID } = req.params;
 
-    const pendingNFTs = await NFT.find({ agentID, status: "pending" });
+    const pendingNFTs = await NFT.find({ agentID, status: "pending", fromAgent: false });
 
     if (pendingNFTs.length === 0) {
       return res.status(404).json({ message: "No pending NFTs found." });
@@ -1073,6 +1073,23 @@ router.get("/pending-nfts/:agentID", async (req, res) => {
     res.status(200).json({ nfts: pendingNFTs });
   } catch (error) {
     console.error("Error fetching pending NFTs:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.get("/pending-nfts-onsale/:agentID", async (req, res) => {
+  try {
+    const { agentID } = req.params;
+
+    const pendingNFTsOnSale = await NFT.find({ agentID, status: "on sale", fromAgent: false });
+
+    if (pendingNFTsOnSale.length === 0) {
+      return res.status(404).json({ message: "No pending NFTs on sale found." });
+    }
+
+    res.status(200).json({ nfts: pendingNFTsOnSale });
+  } catch (error) {
+    console.error("Error fetching pending NFTs on sale:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -1102,6 +1119,37 @@ router.patch("/update-nft-status/:nftId", async (req, res) => {
   }
 });
 
+router.put("/edit-nft/:nftId", async (req, res) => {
+  const { nftId } = req.params;
+  const { creatorName, collectionName, category, bidPrice, comment } = req.body;
+
+  try {
+    const updatedNft = await NFT.findByIdAndUpdate(
+      nftId,
+      {
+        $set: {
+          creatorName,
+          collectionName,
+          category,
+          bidPrice,
+          comment,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updatedNft) {
+      return res.status(404).json({ message: "NFT not found" });
+    }
+
+    res.status(200).json(updatedNft);
+  } catch (error) {
+    console.error("Error updating NFT:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 
 // GET: Fetch all NFTs
 router.get("/fetch-nft-all", async (req, res) => {
@@ -1126,12 +1174,35 @@ router.get("/fetch-nft-user/:userId", async (req, res) => {
   }
 });
 
+router.put('/publish-nft/:nftId', async (req, res) => {
+  try {
+    const { nftId } = req.params;
+    const { status } = req.body;
+
+    const updatedNFT = await NFT.findByIdAndUpdate(
+      nftId,
+      { status },
+      { new: true } // return the updated document
+    );
+
+    if (!updatedNFT) {
+      return res.status(404).json({ error: "NFT not found" });
+    }
+
+    res.status(200).json({ message: "NFT status updated", nft: updatedNFT });
+  } catch (error) {
+    console.error("Error updating NFT:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 router.get("/fetch-agent-nfts/:agentCode/:userId", async (req, res) => {
   try {
     const { agentCode, userId } = req.params;
 
     // Fetch the user
-    const user = await User.findById(userId);
+    const user = await User.findOne({ userId });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -1479,6 +1550,88 @@ router.post('/mint-nft', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+// /api/sell-nft
+router.post('/sell-nft', async (req, res) => {
+  try {
+    const { userId, nftId, bidPrice } = req.body;
+
+    // Validate required fields
+    if (!userId || !nftId || !bidPrice) {
+      return res.status(400).json({ error: 'User ID, NFT ID, and bid price are required' });
+    }
+
+    // Find the user
+    const user = await User.findOne({ userId });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Find the NFT within the user's mintedNfts array
+    const nftIndex = user.mintedNfts.findIndex(nft => nft._id.toString() === nftId);
+    if (nftIndex === -1) {
+      return res.status(404).json({ error: 'NFT not found in user minted list' });
+    }
+
+    // Remove the NFT from the mintedNfts array
+    user.mintedNfts.splice(nftIndex, 1);
+
+    // Add the bid price to the user's returns field
+    user.returns = parseFloat(user.returns || 0) + parseFloat(bidPrice);
+
+    // Save the user and the updates
+    await user.save();
+
+    // Respond with success
+    res.status(200).json({ message: 'NFT sold successfully', newReturns: user.returns });
+  } catch (error) {
+    console.error('Error selling NFT:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+router.post("/agent-nft-purchase", async (req, res) => {
+  try {
+    const { nftId, agentID } = req.body;
+
+    // Step 1: Find the NFT
+    const nft = await NFT.findById(nftId);
+    if (!nft) {
+      return res.status(404).json({ error: "NFT not found" });
+    }
+
+    if (nft.status === "sold") {
+      return res.status(400).json({ error: "NFT already sold" });
+    }
+
+    // Step 2: Find the User (creator) of the NFT
+    const user = await User.findOne({ userId: nft.userId });
+    if (!user) {
+      return res.status(404).json({ error: "User who created the NFT not found" });
+    }
+
+    // Step 3: Update NFT status to "sold"
+    nft.status = "sold";
+    await nft.save();
+
+    // Step 4: Update user return (earnings)
+    const bidPrice = parseFloat(nft.bidPrice);
+    user.returns = (user.returns || 0) + bidPrice;
+    await user.save();
+
+    res.status(200).json({
+      message: "NFT purchased successfully by agent",
+      nft,
+      updatedUser: user,
+    });
+
+  } catch (error) {
+    console.error("Error processing agent NFT purchase:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 
 // ✅ Get all Minted NFTs for a User
 router.get('/fetch-minted-nfts/:userId', async (req, res) => {
