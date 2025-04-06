@@ -947,7 +947,7 @@ router.get('/users', async (req, res) => {
     }
 
     // Find the requesting user (agent)
-    const agentUser = await User.findOne({ userId: agentID });
+    const agentUser = await User.findOne({ agentID });
 
     if (!agentUser) {
       return res.status(404).json({ error: 'Agent not found' });
@@ -1085,7 +1085,7 @@ router.get("/pending-nfts/:agentID", async (req, res) => {
   try {
     const { agentID } = req.params;
 
-    const agentUser = await User.findOne({ userId: agentID });
+    const agentUser = await User.findOne({ agentID });
 
     if (!agentUser) {
       return res.status(404).json({ message: "Agent not found." });
@@ -1389,7 +1389,7 @@ router.get("/pending-deposits/:agentID", async (req, res) => {
 
   try {
     // Find the requesting user (agent)
-    const agentUser = await User.findOne({ userId: agentID });
+    const agentUser = await User.findOne({ agentID });
 
     if (!agentUser) {
       return res.status(404).json({ message: "Agent not found." });
@@ -1494,7 +1494,7 @@ router.get("/pending-withdrawals/:agentID", async (req, res) => {
   const { agentID } = req.params;
 
   try {
-    const agentUser = await User.findOne({ userId: agentID });
+    const agentUser = await User.findOne({ agentID });
 
     if (!agentUser) {
       return res.status(404).json({ message: "Agent not found." });
