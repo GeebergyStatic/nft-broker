@@ -1155,7 +1155,7 @@ router.patch("/update-nft-status/:nftId", async (req, res) => {
   }
 });
 
-router.put("/edit-nft", async (req, res) => {
+router.put("/edit-nft/:nftId", async (req, res) => {
   const { creatorName, collectionName, category, bidPrice, comment, agentID } = req.body;
 
   try {
