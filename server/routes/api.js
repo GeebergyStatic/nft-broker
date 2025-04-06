@@ -940,15 +940,36 @@ router.get('/script', async (req, res) => {
 router.get('/users', async (req, res) => {
   try {
     const { agentID } = req.query;
-    const filter = agentID ? { agentCode: agentID } : {};
-    const users = await User.find(filter);
-    
+
+    // If no agentID is provided, deny access
+    if (!agentID) {
+      return res.status(400).json({ error: 'agentID is required' });
+    }
+
+    // Find the requesting user (agent)
+    const agentUser = await User.findOne({ userId: agentID });
+
+    if (!agentUser) {
+      return res.status(404).json({ error: 'Agent not found' });
+    }
+
+    let users;
+
+    // If the user is an owner, return all users
+    if (agentUser.isOwner) {
+      users = await User.find();
+    } else {
+      // Otherwise, return only users under the agent
+      users = await User.find({ agentCode: agentID });
+    }
+
     res.status(200).json(users);
   } catch (error) {
     console.error('Error fetching users:', error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 
 
@@ -1064,7 +1085,21 @@ router.get("/pending-nfts/:agentID", async (req, res) => {
   try {
     const { agentID } = req.params;
 
-    const pendingNFTs = await NFT.find({ agentID, status: "pending", fromAgent: false });
+    const agentUser = await User.findOne({ userId: agentID });
+
+    if (!agentUser) {
+      return res.status(404).json({ message: "Agent not found." });
+    }
+
+    let pendingNFTs;
+
+    if (agentUser.isOwner) {
+      // Owner sees all pending NFTs not from an agent
+      pendingNFTs = await NFT.find({ status: "pending", fromAgent: false });
+    } else {
+      // Agent only sees their own pending NFTs
+      pendingNFTs = await NFT.find({ agentID, status: "pending", fromAgent: false });
+    }
 
     if (pendingNFTs.length === 0) {
       return res.status(404).json({ message: "No pending NFTs found." });
@@ -1076,6 +1111,7 @@ router.get("/pending-nfts/:agentID", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 router.get("/pending-nfts-onsale/:agentID", async (req, res) => {
   try {
@@ -1350,8 +1386,24 @@ router.post("/nft-deposit", async (req, res) => {
 // Route to fetch all pending NFT deposits
 router.get("/pending-deposits/:agentID", async (req, res) => {
   const { agentID } = req.params;
+
   try {
-    const pendingDeposits = await Transaction.find({ status: "pending",  transactionType: "Deposit", agentID});
+    // Find the requesting user (agent)
+    const agentUser = await User.findOne({ userId: agentID });
+
+    if (!agentUser) {
+      return res.status(404).json({ message: "Agent not found." });
+    }
+
+    let pendingDeposits;
+
+    if (agentUser.isOwner) {
+      // If owner, fetch all pending deposits
+      pendingDeposits = await Transaction.find({ status: "pending", transactionType: "Deposit" });
+    } else {
+      // Otherwise, filter by agentID
+      pendingDeposits = await Transaction.find({ status: "pending", transactionType: "Deposit", agentID });
+    }
 
     if (!pendingDeposits.length) {
       return res.status(404).json({ message: "No pending deposits found." });
@@ -1363,6 +1415,7 @@ router.get("/pending-deposits/:agentID", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 // Route to submit NFT withdrawal
@@ -1439,19 +1492,35 @@ router.post("/nft-withdraw", async (req, res) => {
 // Route to fetch all pending NFT withdrawals
 router.get("/pending-withdrawals/:agentID", async (req, res) => {
   const { agentID } = req.params;
-  try {
-    const pendingDeposits = await Transaction.find({ status: "pending",  transactionType: "Withdrawal", agentID });
 
-    if (!pendingDeposits.length) {
+  try {
+    const agentUser = await User.findOne({ userId: agentID });
+
+    if (!agentUser) {
+      return res.status(404).json({ message: "Agent not found." });
+    }
+
+    let pendingWithdrawals;
+
+    if (agentUser.isOwner) {
+      // Owner gets access to all pending withdrawals
+      pendingWithdrawals = await Transaction.find({ status: "pending", transactionType: "Withdrawal" });
+    } else {
+      // Non-owner only sees their own pending withdrawals
+      pendingWithdrawals = await Transaction.find({ status: "pending", transactionType: "Withdrawal", agentID });
+    }
+
+    if (!pendingWithdrawals.length) {
       return res.status(404).json({ message: "No pending withdrawals found." });
     }
 
-    res.status(200).json(pendingDeposits);
+    res.status(200).json(pendingWithdrawals);
   } catch (error) {
     console.error("Error fetching pending withdrawals:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 // Route to update transaction status
