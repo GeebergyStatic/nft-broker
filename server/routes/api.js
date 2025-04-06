@@ -1662,10 +1662,10 @@ router.post('/sell-nft', async (req, res) => {
 
 router.post("/agent-nft-purchase", async (req, res) => {
   try {
-    const { nftId, agentID } = req.body;
+    const { nftId, collectionName, creatorName, bidPrice, agentID } = req.body;
 
     // Step 1: Find the NFT
-    const nft = await NFT.findById(nftId);
+    const nft = await NFT.findOne(collectionName, creatorName, bidPrice, agentID);
     if (!nft) {
       return res.status(404).json({ error: "NFT not found" });
     }
@@ -1685,8 +1685,8 @@ router.post("/agent-nft-purchase", async (req, res) => {
     await nft.save();
 
     // Step 4: Update user return (earnings)
-    const bidPrice = parseFloat(nft.bidPrice);
-    user.returns = (user.returns || 0) + bidPrice;
+    const Price = parseFloat(nft.bidPrice);
+    user.returns = (user.returns || 0) + Price;
     await user.save();
 
     res.status(200).json({
