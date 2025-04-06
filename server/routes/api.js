@@ -1156,13 +1156,21 @@ router.patch("/update-nft-status/:nftId", async (req, res) => {
 });
 
 router.put("/edit-nft/:nftId", async (req, res) => {
-  const { nftId } = req.params;
-  const { creatorName, collectionName, category, bidPrice, comment } = req.body;
+  const { creatorName, collectionName, category, bidPrice, comment, agentID } = req.body;
 
   try {
-    // Update all users who have this NFT in their `mintedNfts` array
+    // Update all users who have an NFT in their mintedNfts array that matches the given filters
     const result = await User.updateMany(
-      { "mintedNfts._id": nftId },
+      {
+        mintedNfts: {
+          $elemMatch: {
+            creatorName,
+            collectionName,
+            bidPrice,
+            agentID
+          }
+        }
+      },
       {
         $set: {
           "mintedNfts.$.creatorName": creatorName,
@@ -1175,10 +1183,13 @@ router.put("/edit-nft/:nftId", async (req, res) => {
     );
 
     if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: "NFT not found in any user's collection" });
+      return res.status(404).json({ message: "No matching NFTs found in user collections" });
     }
 
-    res.status(200).json({ message: "NFT updated in all relevant user collections", result });
+    res.status(200).json({
+      message: "NFT updated in all relevant user collections",
+      result,
+    });
   } catch (error) {
     console.error("Error updating NFT in user collections:", error);
     res.status(500).json({ message: "Server error" });
