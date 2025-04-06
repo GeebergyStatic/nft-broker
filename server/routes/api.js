@@ -1156,48 +1156,51 @@ router.patch("/update-nft-status/:nftId", async (req, res) => {
 });
 
 router.put("/edit-nft/:creatorName/:collectionName/:agentID", async (req, res) => {
-  const { creatorName, collectionName, agentID} = req.params;
-  const { bidPrice} = req.body;
+  const { creatorName, collectionName, agentID } = req.params;
+  const { bidPrice } = req.body;
 
   try {
-    // Step 1: Log all user NFTs to see their structure (fully expand the objects)
-    const users = await User.find({}).select("mintedNfts");
-    users.forEach(user => {
-      console.log(`User ${user._id} minted NFTs:`);
-      user.mintedNfts.forEach(nft => {
-        console.log(`user nfts: ${nft} and sent items: ${creatorName, collectionName, agentID, bidPrice}`);
-      });
-    });
-    
-
-    // Step 2: Update all users who have an NFT in their mintedNfts array that matches the given filters
+    // Update user.mintedNfts array
     const result = await User.updateMany(
-      { 
-        "mintedNfts.creatorName": creatorName, 
-        "mintedNfts.collectionName": collectionName, 
-        "mintedNfts.agentID": agentID 
+      {
+        "mintedNfts.creatorName": creatorName,
+        "mintedNfts.collectionName": collectionName,
+        "mintedNfts.agentID": agentID
       },
       {
         $set: {
-          "mintedNfts.$[elem].bidPrice": bidPrice,
+          "mintedNfts.$[elem].bidPrice": bidPrice
         }
       },
       {
-        arrayFilters: [{ "elem.creatorName": creatorName }] // Filter to update specific array element
+        arrayFilters: [{ "elem.creatorName": creatorName }]
       }
     );
-    
 
-    if (result.modifiedCount === 0) {
-      return res.status(404).json({ message: "No matching NFTs found in user collections" });
+    // ✅ NEW: Update global NFT collection
+    const nftResult = await NFT.updateMany(
+      {
+        creatorName,
+        collectionName,
+        agentID
+      },
+      {
+        $set: { bidPrice }
+      }
+    );
+
+    if (result.modifiedCount === 0 && nftResult.modifiedCount === 0) {
+      return res.status(404).json({ message: "No matching NFTs found" });
     }
 
     res.status(200).json({
-      message: "NFT updated in all relevant user collections",
-      result,
+      message: "NFT updated in user collections and global NFT collection",
+      userUpdateResult: result,
+      globalNFTUpdateResult: nftResult
     });
+
   } catch (error) {
-    console.error("Error updating NFT in user collections:", error);
+    console.error("Error updating NFT:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
