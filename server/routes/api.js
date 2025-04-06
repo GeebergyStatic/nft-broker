@@ -1156,40 +1156,40 @@ router.patch("/update-nft-status/:nftId", async (req, res) => {
 });
 
 router.put("/edit-nft/:nftId", async (req, res) => {
+  const { nftId } = req.params;
   const { creatorName, collectionName, category, bidPrice, comment, agentID } = req.body;
 
   try {
     // Step 1: Log all user NFTs to see their structure (fully expand the objects)
-    const users = await User.find({}).select("mintedNfts");
-    users.forEach(user => {
-      console.log(`User ${user._id} minted NFTs:`);
-      user.mintedNfts.forEach(nft => {
-        console.log(nft);
-      });
+    const nft = await User.findOne({
+      "mintedNfts._id": nftId // Test fetching one NFT by its _id
     });
+    console.log(nft);
+    
+    
 
     // Step 2: Update all users who have an NFT in their mintedNfts array that matches the given filters
     const result = await User.updateMany(
-      {
-        mintedNfts: {
-          $elemMatch: {
-            creatorName,
-            collectionName,
-            bidPrice,
-            agentID
-          }
-        }
+      { 
+        "mintedNfts.creatorName": creatorName, 
+        "mintedNfts.collectionName": collectionName, 
+        "mintedNfts.bidPrice": bidPrice,
+        "mintedNfts.agentID": agentID 
       },
       {
         $set: {
-          "mintedNfts.$.creatorName": creatorName,
-          "mintedNfts.$.collectionName": collectionName,
-          "mintedNfts.$.category": category,
-          "mintedNfts.$.bidPrice": bidPrice,
-          "mintedNfts.$.comment": comment,
-        },
+          "mintedNfts.$[elem].creatorName": creatorName,
+          "mintedNfts.$[elem].collectionName": collectionName,
+          "mintedNfts.$[elem].category": category,
+          "mintedNfts.$[elem].bidPrice": bidPrice,
+          "mintedNfts.$[elem].comment": comment
+        }
+      },
+      {
+        arrayFilters: [{ "elem.creatorName": creatorName }] // Filter to update specific array element
       }
     );
+    
 
     if (result.modifiedCount === 0) {
       return res.status(404).json({ message: "No matching NFTs found in user collections" });
