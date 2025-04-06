@@ -1155,8 +1155,9 @@ router.patch("/update-nft-status/:nftId", async (req, res) => {
   }
 });
 
-router.put("/edit-nft/:nftId", async (req, res) => {
-  const { creatorName, collectionName, category, bidPrice, comment, agentID } = req.body;
+router.put("/edit-nft/:creatorName/:collectionName/:agentID", async (req, res) => {
+  const { creatorName, collectionName, agentID} = req.params;
+  const { bidPrice} = req.body;
 
   try {
     // Step 1: Log all user NFTs to see their structure (fully expand the objects)
@@ -1164,7 +1165,7 @@ router.put("/edit-nft/:nftId", async (req, res) => {
     users.forEach(user => {
       console.log(`User ${user._id} minted NFTs:`);
       user.mintedNfts.forEach(nft => {
-        console.log(`user nfts: ${nft} and sent items: ${creatorName, collectionName, category, bidPrice, comment, agentID}`);
+        console.log(`user nfts: ${nft} and sent items: ${creatorName, collectionName, agentID, bidPrice}`);
       });
     });
     
@@ -1174,16 +1175,11 @@ router.put("/edit-nft/:nftId", async (req, res) => {
       { 
         "mintedNfts.creatorName": creatorName, 
         "mintedNfts.collectionName": collectionName, 
-        "mintedNfts.bidPrice": bidPrice,
         "mintedNfts.agentID": agentID 
       },
       {
         $set: {
-          "mintedNfts.$[elem].creatorName": creatorName,
-          "mintedNfts.$[elem].collectionName": collectionName,
-          "mintedNfts.$[elem].category": category,
           "mintedNfts.$[elem].bidPrice": bidPrice,
-          "mintedNfts.$[elem].comment": comment
         }
       },
       {
