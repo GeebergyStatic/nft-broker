@@ -1665,7 +1665,13 @@ router.post("/agent-nft-purchase", async (req, res) => {
     const { nftId, collectionName, creatorName, bidPrice, agentID } = req.body;
 
     // Step 1: Find the NFT
-    const nft = await NFT.findOne(collectionName, creatorName, bidPrice, agentID);
+    const nft = await NFT.findOne({
+      collectionName,
+      creatorName,
+      bidPrice: parseFloat(bidPrice), // if needed
+      agentID
+    });
+    
     if (!nft) {
       return res.status(404).json({ error: "NFT not found" });
     }
