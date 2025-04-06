@@ -1159,9 +1159,14 @@ router.put("/edit-nft/:nftId", async (req, res) => {
   const { creatorName, collectionName, category, bidPrice, comment, agentID } = req.body;
 
   try {
-    // Step 1: Log all user NFTs to see their structure
+    // Step 1: Log all user NFTs to see their structure (fully expand the objects)
     const users = await User.find({}).select("mintedNfts");
-    console.log("All users and their minted NFTs:", users);
+    users.forEach(user => {
+      console.log(`User ${user._id} minted NFTs:`);
+      user.mintedNfts.forEach(nft => {
+        console.log(nft);
+      });
+    });
 
     // Step 2: Update all users who have an NFT in their mintedNfts array that matches the given filters
     const result = await User.updateMany(
@@ -1199,6 +1204,7 @@ router.put("/edit-nft/:nftId", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
 
 
 
