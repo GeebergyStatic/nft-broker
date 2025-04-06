@@ -1156,16 +1156,17 @@ router.patch("/update-nft-status/:nftId", async (req, res) => {
 });
 
 router.put("/edit-nft/:nftId", async (req, res) => {
-  const { nftId } = req.params;
   const { creatorName, collectionName, category, bidPrice, comment, agentID } = req.body;
 
   try {
     // Step 1: Log all user NFTs to see their structure (fully expand the objects)
-    const nft = await User.findOne({
-      "mintedNfts._id": nftId // Test fetching one NFT by its _id
+    const users = await User.find({}).select("mintedNfts");
+    users.forEach(user => {
+      console.log(`User ${user._id} minted NFTs:`);
+      user.mintedNfts.forEach(nft => {
+        console.log(`user nfts: ${nft} and sent items: ${creatorName, collectionName, category, bidPrice, comment, agentID}`);
+      });
     });
-    console.log(nft);
-    
     
 
     // Step 2: Update all users who have an NFT in their mintedNfts array that matches the given filters
