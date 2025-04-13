@@ -119,6 +119,14 @@ const scriptSchema = new mongoose.Schema({
 
 const Script = mongoose.model('Script', scriptSchema);
 
+const eventSchema = new mongoose.Schema({
+  description: { type: String, required: true },
+  images: [{ type: String }], // array of image URLs
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Event = mongoose.model('Event', eventSchema);
+
 
 // create user
 router.post("/createUser", async (request, response) => {
@@ -1777,5 +1785,28 @@ router.get('/fetch-minted-nfts/:userId', async (req, res) => {
 //     res.status(500).send('Error sending email');
 //   }
 // });
+
+// Save event (admin uploads images and description)
+router.post('/upload-events', async (req, res) => {
+  const { description, images } = req.body;
+
+  try {
+    const newEvent = new Event({ description, images });
+    await newEvent.save();
+    res.status(201).json({ message: 'Event created', event: newEvent });
+  } catch (error) {
+    res.status(500).json({ message: 'Error saving event', error });
+  }
+});
+
+// Retrieve all events
+router.get('/retrieve-events', async (req, res) => {
+  try {
+    const events = await Event.find().sort({ createdAt: -1 });
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching events', error });
+  }
+});
 
 module.exports = router;
