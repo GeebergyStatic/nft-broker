@@ -31,6 +31,7 @@ const schema = new mongoose.Schema({
   avatar: String,
   number: String,
   wallets: [WalletSchema], 
+  password: String,
   role: String,
   balance: Number,
   deposit: Number,
