@@ -9,7 +9,6 @@ const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
 
-
 const uri = process.env.uri;
 
 async function connectToMongoDB() {
@@ -1796,14 +1795,15 @@ router.post('/oremi-admin-login', async (req, res) => {
 
   try {
     const user = await User.findOne({ email, role: 'oremi admin' });
-    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!user) return res.status(401).json({ success: false, message: 'Invalid credentials: user not found' });
 
     const match = await bcrypt.compare(password, user.password);
-    if (!match) return res.status(401).json({ message: 'Invalid credentials' });
+    if (!match) return res.status(401).json({ success: false, message: 'Invalid credentials: password mismatch' });
 
-    res.json({ userId: user._id });
+    res.json({ success: true, userId: user._id });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    console.error('Login error:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
   }
 });
 
