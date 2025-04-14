@@ -5,8 +5,10 @@ const router = express.Router();
 const User = require('../model');
 const { MongoClient } = require('mongodb');
 const cron = require('node-cron');
+const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
+
 
 const uri = process.env.uri;
 
@@ -1785,6 +1787,25 @@ router.get('/fetch-minted-nfts/:userId', async (req, res) => {
 //     res.status(500).send('Error sending email');
 //   }
 // });
+
+
+
+// oremi admin login
+router.post('/oremi-admin-login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email, role: 'oremi admin' });
+    if (!user) return res.status(401).json({ message: 'Invalid credentials' });
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(401).json({ message: 'Invalid credentials' });
+
+    res.json({ userId: user._id });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // Save event (admin uploads images and description)
 router.post('/upload-events', async (req, res) => {
