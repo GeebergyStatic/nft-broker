@@ -1807,62 +1807,80 @@ router.post('/oremi-admin-login', async (req, res) => {
   }
 });
 
-// Save event (admin uploads images and description)
+// 1. Upload new event
 router.post('/upload-events', async (req, res) => {
-  const { description, images } = req.body;
-
   try {
+    const { description, images } = req.body;
     const newEvent = new Event({ description, images });
     await newEvent.save();
-    res.status(201).json({ message: 'Event created', event: newEvent });
-  } catch (error) {
-    res.status(500).json({ message: 'Error saving event', error });
+    res.status(201).json({ message: 'Event saved' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-// Retrieve all events
+// 2. Retrieve all events
 router.get('/retrieve-events', async (req, res) => {
   try {
-    const events = await Event.find().sort({ createdAt: -1 });
+    const events = await Event.find().sort({ _id: -1 });
     res.json(events);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching events', error });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
-router.patch('/delete-event-image/:id', async (req, res) => {
-  const { imageUrl } = req.body;
-  const eventId = req.params.id;
-
+// 3. Edit description
+router.post('/edit-event', async (req, res) => {
   try {
+    const { eventId, newDescription } = req.body;
     const event = await Event.findById(eventId);
-    event.images = event.images.filter(img => img !== imageUrl);
-    await event.save();
-    res.json({ message: 'Image removed.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Error removing image' });
-  }
-});
-
-router.delete('/delete-event/:id', async (req, res) => {
-  try {
-    await Event.findByIdAndDelete(req.params.id);
-    res.json({ message: 'Event deleted.' });
-  } catch (err) {
-    res.status(500).json({ message: 'Failed to delete event.' });
-  }
-});
-
-
-router.patch('/edit-description/:id', async (req, res) => {
-  const { newDescription } = req.body;
-  try {
-    const event = await Event.findById(req.params.id);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
     event.description = newDescription;
     await event.save();
-    res.json({ message: 'Description updated.' });
+    res.json({ message: 'Description updated' });
   } catch (err) {
-    res.status(500).json({ message: 'Error updating description.' });
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 4. Delete single image from event
+router.post('/delete-image', async (req, res) => {
+  try {
+    const { eventId, imageUrl } = req.body;
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+
+    event.images = event.images.filter(url => url !== imageUrl);
+    await event.save();
+    res.json({ message: 'Image deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5. Delete entire event
+router.delete('/delete-event', async (req, res) => {
+  try {
+    const { eventId } = req.body;
+    await Event.findByIdAndDelete(eventId);
+    res.json({ message: 'Event deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 6. Add more images to event
+router.post('/add-images', async (req, res) => {
+  try {
+    const { eventId, newImages } = req.body;
+    const event = await Event.findById(eventId);
+    if (!event) return res.status(404).json({ message: 'Event not found' });
+
+    event.images.push(...newImages);
+    await event.save();
+    res.json({ message: 'Images added' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
