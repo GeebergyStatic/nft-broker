@@ -1830,4 +1830,41 @@ router.get('/retrieve-events', async (req, res) => {
   }
 });
 
+router.patch('/delete-event-image/:id', async (req, res) => {
+  const { imageUrl } = req.body;
+  const eventId = req.params.id;
+
+  try {
+    const event = await Event.findById(eventId);
+    event.images = event.images.filter(img => img !== imageUrl);
+    await event.save();
+    res.json({ message: 'Image removed.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error removing image' });
+  }
+});
+
+router.delete('/delete-event/:id', async (req, res) => {
+  try {
+    await Event.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Event deleted.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to delete event.' });
+  }
+});
+
+
+router.patch('/edit-description/:id', async (req, res) => {
+  const { newDescription } = req.body;
+  try {
+    const event = await Event.findById(req.params.id);
+    event.description = newDescription;
+    await event.save();
+    res.json({ message: 'Description updated.' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating description.' });
+  }
+});
+
+
 module.exports = router;
