@@ -1325,12 +1325,21 @@ router.get("/fetch-agent-nfts/:agentCode/:userId", async (req, res) => {
     // Get fileUrls of already minted NFTs
     const mintedFileUrls = user.mintedNfts.map(nft => nft.fileUrl);
 
-    // Fetch NFTs from the agent or where userId is targeted and hasn't been minted by this user
+    // Fetch unminted NFTs based on two cases:
+    // 1. NFTs created by the agent and not targeted to anyone
+    // 2. NFTs that specifically target the user
     const userNFTs = await NFT.find({
       fileUrl: { $nin: mintedFileUrls },
       $or: [
-        { agentID: agentCode, fromAgent: true },
-        { targets: userId, fromAgent: true } // targets is an array, and we're checking if it includes userId
+        {
+          agentID: agentCode,
+          fromAgent: true,
+          $or: [
+            { targets: { $exists: false } },
+            { targets: { $size: 0 } }
+          ]
+        },
+        { targets: userId, fromAgent: true }
       ]
     });
 
