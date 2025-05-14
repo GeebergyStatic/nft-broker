@@ -1330,7 +1330,7 @@ router.get("/fetch-agent-nfts/:agentCode/:userId", async (req, res) => {
       fileUrl: { $nin: mintedFileUrls },
       $or: [
         { agentID: agentCode, fromAgent: true },
-        { targets: userId } // targets is an array, and we're checking if it includes userId
+        { targets: userId, fromAgent: true } // targets is an array, and we're checking if it includes userId
       ]
     });
 
