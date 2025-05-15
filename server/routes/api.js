@@ -1790,15 +1790,20 @@ router.post('/sell-nft', async (req, res) => {
 
 router.post("/agent-nft-purchase", async (req, res) => {
   try {
-    const { nftId, collectionName, creatorName, bidPrice, agentID } = req.body;
+    const { nftId /*, collectionName, creatorName, bidPrice, agentID */ } = req.body;
 
-    // Step 1: Find the NFT
+    // Step 1: Find the NFT by ID
+    const nft = await NFT.findById(nftId);
+
+    // Old method (commented out for reference)
+    /*
     const nft = await NFT.findOne({
       collectionName,
       creatorName,
       bidPrice: parseFloat(bidPrice), // if needed
       agentID
     });
+    */
 
     if (!nft) {
       return res.status(404).json({ error: "NFT not found" });
@@ -1834,6 +1839,7 @@ router.post("/agent-nft-purchase", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+
 
 
 
