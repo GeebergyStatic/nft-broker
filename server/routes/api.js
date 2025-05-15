@@ -36,6 +36,7 @@ const NFTSchema = new mongoose.Schema(
       enum: ["art", "music", "domain names", "sports", "collectible", "photography"],
     },
     bidPrice: { type: Number, required: true },
+    totalBids: { type: Number, default: 0 }, // ✅ Add this line
     comment: { type: String },
     agentID: { type: String },
     fromAgent: { type: Boolean, default: false },
@@ -44,10 +45,11 @@ const NFTSchema = new mongoose.Schema(
       enum: ["pending", "failed", "successful", "approved", "on sale", "sold", "denied"],
       default: "pending",
     },
-    targets: [{ type: String }], // 👈 Added targets as array of userId strings
+    targets: [{ type: String }],
   },
   { timestamps: true }
 );
+
 
 const NFT = mongoose.model("NFT", NFTSchema);
 
@@ -1167,24 +1169,60 @@ router.get("/pending-nfts-onsale/:agentID", async (req, res) => {
 
     let pendingNFTsOnSale;
 
+    const statusFilter = { status: { $in: ["on sale", "sold"] }, fromAgent: false };
+
     if (agentUser.isOwner) {
-      // Owner sees all NFTs on sale not from agents
-      pendingNFTsOnSale = await NFT.find({ status: "on sale", fromAgent: false });
+      // Owner sees all NFTs on sale or sold, not from agents
+      pendingNFTsOnSale = await NFT.find(statusFilter);
     } else {
-      // Agent only sees their own NFTs on sale
-      pendingNFTsOnSale = await NFT.find({ agentID, status: "on sale", fromAgent: false });
+      // Agent only sees their own NFTs on sale or sold
+      pendingNFTsOnSale = await NFT.find({ agentID, ...statusFilter });
     }
 
     if (pendingNFTsOnSale.length === 0) {
-      return res.status(404).json({ message: "No NFTs on sale found." });
+      return res.status(404).json({ message: "No NFTs on sale or sold found." });
     }
 
     res.status(200).json({ nfts: pendingNFTsOnSale });
   } catch (error) {
-    console.error("Error fetching NFTs on sale:", error);
+    console.error("Error fetching NFTs on sale or sold:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
+
+// update nft sale feature
+// Update NFT's bidPrice and totalBids
+router.put("/update-nft/:nftId", async (req, res) => {
+  try {
+    const { nftId } = req.params;
+    const { bidPrice, totalBids } = req.body;
+
+    // Validate inputs (optional but recommended)
+    if (typeof bidPrice !== "number" || typeof totalBids !== "number") {
+      return res.status(400).json({ message: "Invalid input types." });
+    }
+
+    const updatedNFT = await NFT.findByIdAndUpdate(
+      nftId,
+      {
+        bidPrice,
+        totalBids,
+      },
+      { new: true } // return the updated document
+    );
+
+    if (!updatedNFT) {
+      return res.status(404).json({ message: "NFT not found." });
+    }
+
+    res.status(200).json({ message: "NFT updated successfully", nft: updatedNFT });
+  } catch (error) {
+    console.error("Error updating NFT:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 
 
 // Change NFT status (Approve/Decline)
