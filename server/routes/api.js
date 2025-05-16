@@ -1169,7 +1169,7 @@ router.get("/pending-nfts-onsale/:agentID", async (req, res) => {
 
     let pendingNFTsOnSale;
 
-    const statusFilter = { status: { $in: ["on sale", "sold"] }, fromAgent: false };
+    const statusFilter = { status: { $in: ["on sale", "sold", "approved"] }, fromAgent: false };
 
     if (agentUser.isOwner) {
       // Owner sees all NFTs on sale or sold, not from agents
