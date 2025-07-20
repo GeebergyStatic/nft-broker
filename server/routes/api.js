@@ -1462,7 +1462,7 @@ router.post("/nft-add-wallet", async (req, res) => {
 });
 
 // Fetch wallets for a user
-router.get("/nft-wallets/:userId", auth, async (req, res) => {
+router.get("/nft-wallets/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
