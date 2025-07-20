@@ -1466,11 +1466,16 @@ router.get("/nft-wallets/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // ADMIN view
-    if (req.user.isOwner) {
-      // Fetch all users' names and wallets
+    // 1️⃣ Find the requesting user by the userId param
+    const requestingUser = await User.findOne({ userId }, "name isOwner wallets").lean();
+    if (!requestingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // 2️⃣ If that user is the owner/admin, return *all* wallets
+    if (requestingUser.isOwner) {
       const users = await User.find({}, "name wallets").lean();
-      const all = users.flatMap(u =>
+      const allWallets = users.flatMap(u =>
         u.wallets.map(w => ({
           ownerName: u.name,
           walletName: w.walletName,
@@ -1480,29 +1485,26 @@ router.get("/nft-wallets/:userId", async (req, res) => {
           _id: w._id
         }))
       );
-      return res.json({ wallets: all });
+      return res.json({ wallets: allWallets });
     }
 
-    // REGULAR USER view: must match custom userId
+    // 3️⃣ Otherwise, ensure they’re only fetching their own wallets
+    //    (double-check against authenticated token if you like)
     if (req.user.userId !== userId) {
       return res.status(403).json({ message: "Forbidden" });
     }
 
-    // Find by the custom userId field
-    const user = await User.findOne({ userId }, "wallets").lean();
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    // Only expose non‑sensitive fields
-    const own = user.wallets.map(w => ({
+    // 4️⃣ Return just that user’s wallets (non-sensitive fields)
+    const ownWallets = requestingUser.wallets.map(w => ({
       walletName: w.walletName,
       walletAddress: w.walletAddress,
       dateAdded: w.dateAdded,
       _id: w._id
     }));
+    return res.json({ wallets: ownWallets });
 
-    return res.json({ wallets: own });
   } catch (err) {
-    console.error(err);
+    console.error("Error in GET /nft-wallets/:userId", err);
     res.status(500).json({ message: err.message });
   }
 });
