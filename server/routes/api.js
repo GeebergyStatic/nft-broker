@@ -8,7 +8,9 @@ const cron = require('node-cron');
 const bcrypt = require('bcrypt');
 const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
+const { Resend } = require("resend");
 
+const resend = new Resend(process.env.RESEND_API_KEY);
 const uri = process.env.uri;
 
 async function connectToMongoDB() {
@@ -1906,35 +1908,90 @@ router.get('/fetch-minted-nfts/:userId', async (req, res) => {
   }
 });
 
-// router.post('/send-email', async (req, res) => {
-//   const { customName, customEmail, customMessage } = req.body;
 
-//   // Set up Gmail SMTP transporter
-//   const transporter = nodemailer.createTransport({
-//     service: 'gmail',
-//     auth: {
-//       user: 'obeingilbert3884@gmail.com', // Your Gmail address
-//       pass: process.env.gmail_pass,   // Your Gmail password (or App password if 2FA enabled)
-//     },
-//   });
 
-//   // Email options
-//   const mailOptions = {
-//     from: customEmail,
-//     to: 'oremifoundation.ng@gmail.com',  // Your email where you want to receive the message
-//     subject: `Message from ${customName}`,
-//     text: `Message from: ${customName}\nEmail: ${customEmail}\n\nMessage:\n${customMessage}`,
-//   };
+router.post("/send-email", async (req, res) => {
+  try {
+    const { auctionDate, recipientName, recipientEmail, senderName } = req.body;
 
-//   try {
-//     // Send email
-//     await transporter.sendMail(mailOptions);
-//     res.status(200).send('Email sent successfully');
-//   } catch (error) {
-//     console.error('Error sending email:', error);
-//     res.status(500).send('Error sending email');
-//   }
-// });
+    if (!auctionDate || !recipientName || !recipientEmail || !senderName) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recipientEmail)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // load the template from .env
+    const variables = {
+      auctionDate,
+      receiverName: recipientName,
+      senderName,
+      // donateUrl: process.env.DONATE_URL
+    };
+
+    let emailHtml = fillTemplate(process.env.EMAIL_TEMPLATE, variables);
+    let emailSubject = fillTemplate(process.env.EMAIL_SUBJECT, variables);
+
+    const data = await resend.emails.send({
+      from: `DeepSea Auctions <auctions@deepseachain.online>`,
+      to: recipientEmail,
+      subject: emailSubject,
+      html: emailHtml
+    });
+
+    res.json({ message: "Email request sent successfully", data });
+  } catch (error) {
+    res.status(500).json({ message: "Error sending email", error: error.message });
+  }
+});
+
+function fillTemplate(template, variables) {
+  return Object.entries(variables).reduce(
+    (str, [key, value]) => str.replace(new RegExp(`{{${key}}}`, "g"), value),
+    template
+  );
+}
+
+router.post("/check-password", (req, res) => {
+  try {
+    const { password } = req.body;
+
+    // Check if password field is missing
+    if (!password) {
+      return res.status(400).json({
+        valid: false,
+        error: "Password is required."
+      });
+    }
+
+    // Check if environment variable is set
+    if (!process.env.PAGE_PASSWORD) {
+      console.error("PAGE_PASSWORD is not set in environment variables.");
+      return res.status(500).json({
+        valid: false,
+        error: "Server configuration error."
+      });
+    }
+
+    // Validate password
+    if (password === process.env.PAGE_PASSWORD) {
+      return res.json({ valid: true });
+    } else {
+      return res.status(401).json({
+        valid: false,
+        error: "Invalid password."
+      });
+    }
+  } catch (err) {
+    console.error("Error in /api/check-password:", err.message);
+    return res.status(500).json({
+      valid: false,
+      error: "Internal server error."
+    });
+  }
+});
 
 
 
