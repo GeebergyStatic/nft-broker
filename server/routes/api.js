@@ -1097,11 +1097,11 @@ router.post("/submit-nfts", async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    if (user.balance < 0.10) {
+    if (user.balance < 0.05) {
       return res.status(400).json({ message: "Insufficient balance." });
     }
 
-    user.balance -= 0.10;
+    user.balance -= 0.05;
     await user.save();
 
     const newNFT = new NFT({
@@ -1626,7 +1626,7 @@ router.post("/nft-withdraw", async (req, res) => {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const totalCharge = parsedEthAmount + 0.10; // ✅ Correct calculation
+    const totalCharge = parsedEthAmount + 0.05; // ✅ Correct calculation
 
     // Check if balance is enough
     if (user.balance < totalCharge) {
@@ -1761,7 +1761,7 @@ router.post('/mint-nft', async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const GAS_FEE = 0.1; // ✅ Gas fee in ETH
+    const GAS_FEE = 0.05; // ✅ Gas fee in ETH
     const totalAmount = parseFloat(bidPrice) + GAS_FEE; // ✅ Convert bidPrice to number and add gas fee
 
     // Check if user has enough balance
