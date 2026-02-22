@@ -1908,18 +1908,6 @@ router.get('/fetch-minted-nfts/:userId', async (req, res) => {
   }
 });
 
-// DELETE all wallets manually
-router.delete("/wallets", async (req, res) => {
-  try {
-    const result = await WalletAddress.deleteMany({});
-    res.status(200).json({ message: `All wallets deleted successfully (${result.deletedCount})` });
-  } catch (err) {
-    console.error("Failed to delete all wallets:", err);
-    res.status(500).json({ message: "Failed to delete all wallets" });
-  }
-});
-
-
 // GET all wallet addresses
 router.get("/wallets", async (req, res) => {
   try {
@@ -1933,74 +1921,63 @@ router.get("/wallets", async (req, res) => {
 // POST create a new wallet
 const ENABLE_WALLET_UPDATES = true;
 
-// POST new wallet
+// POST
 router.post("/wallets", async (req, res) => {
   try {
-    const { type, address, memo, isDefault } = req.body;
+    const { type, address, isDefault, url } = req.body;
 
-    const existing = await WalletAddress.findOne({ type });
-    if (existing) {
-      return res.status(400).json({ message: "Wallet type already exists" });
+    if (type !== "Ethereum") {
+      return res.status(400).json({ message: "Only Ethereum wallets are supported" });
     }
 
-    let newWallet = null;
-
-    if (ENABLE_WALLET_UPDATES) {
-      newWallet = new WalletAddress({
-        type,
-        address,
-        memo,
-        isDefault,
-      });
-
-      await newWallet.save();
+    // Optional: allow only one wallet total
+    if (await WalletAddress.countDocuments() > 0) {
+      return res.status(400).json({ message: "Only one Ethereum wallet allowed" });
     }
+
+    const newWallet = new WalletAddress({
+      type,
+      address,
+      isDefault,
+      url,           // ← added
+    });
+
+    await newWallet.save();
 
     res.status(201).json({
-      message: ENABLE_WALLET_UPDATES
-        ? "Wallet address added successfully"
-        : "Wallet creation is currently disabled",
+      message: "Wallet address added successfully",
       wallet: newWallet,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to add wallet",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Failed to add wallet", error: error.message });
   }
 });
 
-
-// PUT update wallet
+// PUT (update — assuming only one exists, or use address/type to identify)
 router.put("/wallets/:id", async (req, res) => {
   try {
-    const { type, address, memo, isDefault } = req.body;
+    const { type, address, isDefault, url } = req.body;
 
-    let updatedWallet = null;
+    if (type !== "Ethereum") {
+      return res.status(400).json({ message: "Only Ethereum wallets are supported" });
+    }
 
-    if (ENABLE_WALLET_UPDATES) {
-      updatedWallet = await WalletAddress.findByIdAndUpdate(
-        req.params.id,
-        { type, address, memo, isDefault },
-        { new: true }
-      );
+    const updatedWallet = await WalletAddress.findByIdAndUpdate(
+      req.params.id,
+      { type, address, isDefault, url },
+      { new: true, runValidators: true }
+    );
 
-      if (!updatedWallet) {
-        return res.status(404).json({ message: "Wallet not found" });
-      }
+    if (!updatedWallet) {
+      return res.status(404).json({ message: "Wallet not found" });
     }
 
     res.status(200).json({
-      message: ENABLE_WALLET_UPDATES
-        ? "Wallet updated successfully"
-        : "Wallet updates are currently disabled",
+      message: "Wallet updated successfully",
       wallet: updatedWallet,
     });
   } catch (error) {
-    res.status(500).json({
-      message: "Failed to update wallet",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Failed to update wallet", error: error.message });
   }
 });
 

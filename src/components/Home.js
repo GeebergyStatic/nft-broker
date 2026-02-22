@@ -143,7 +143,7 @@ function Home() {
         <div className='container'>
           {/* link wallet */}
           <div
-            className="d-flex align-items-center justify-content-between flex-wrap gap-3 p-4 rounded-4 shadow-lg mb-4"
+            className="d-flex align-items-center justify-content-between flex-wrap gap-3 p-4 rounded-4 shadow-lg mb-4 main-container"
             style={{
               background: 'linear-gradient(135deg, #1e3a8a, #312e81)',
               color: 'white',
