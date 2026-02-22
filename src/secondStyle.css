@@ -1,0 +1,462 @@
+.whole-wallet-container {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  background: url('../public/5621625.jpg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow-x: hidden;
+  z-index: -3;
+}
+.whole-wallet-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: blur(5px); /* Adjust the blur amount */
+  z-index: -1;
+}
+.wallet-balance-container {
+    width: 100%;
+    /* max-width: 500px; */
+    /* margin: 3rem auto; */
+    /* height: 450px; */
+    padding: 20px;
+    background-color: rgba(245, 245, 245, 0.8);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  }
+  .b-top{
+    border-top: 2px solid gray;
+  }
+  .remove-btn-style{
+    border: none;
+    background: none;
+  }
+  .wallet-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .wallet-header h2 {
+    color: #333;
+    font-size: 24px;
+  }
+  
+  .wallet-balance {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  /* Add a disabled class to disable pointer events */
+.disabled {
+  pointer-events: none;
+  /* Add any additional styling for the disabled state */
+}
+
+.spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100px; /* Adjust as needed */
+}
+
+.spinner {
+  border: 4px solid #f3f3f3; /* Light grey */
+  border-top: 4px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+      transform: rotate(0deg);
+  }
+  100% {
+      transform: rotate(360deg);
+  }
+}
+
+
+/* Add this to your styles or in a separate stylesheet */
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 48%;
+  left: 53%;
+  transform: translate(-50%, -50%);
+  /* background-color: #fff; */
+  padding: 20px;
+  /* border: 1px solid #ccc; */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.modal.open {
+  display: block;
+}
+
+.modal-content {
+  /* Add any additional styling for the modal content here */
+}
+
+.form-control, .form-select{
+  border: none !important;
+  border-bottom: 2px solid #9F00FF !important;
+}
+.form-control:active, .form-control:focus{
+  box-shadow: none !important;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+
+  .balance-amount {
+    display: flex;
+    align-items: center;
+    font-size: 36px;
+    color: #009688;
+  }
+  
+  .currency-symbol {
+    font-size: 24px;
+  }
+  
+  .balance-value {
+    margin-left: 5px;
+  }
+  
+  .add-funds-button {
+    background-color: #009688;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  
+  .add-funds-button:hover {
+    background-color: #00786c;
+  }
+  
+  .recent-transactions h3 {
+    color: #333;
+    font-size: 20px;
+    margin-top: 20px;
+  }
+  
+  .transaction-list {
+    list-style: none;
+    background-color: rgba(255, 255, 255, 0.7); /* Adjust the alpha value as needed (0.0 to 1.0) */
+    padding: 0;
+  }
+  
+  .transaction-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e0e0e0;
+    color: #555;
+    font-size: 16px;
+  }
+  
+  /* PaymentModal.css */
+
+.payment-modal {
+  padding: 20px;
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  /* margin-top: 15%; */
+}
+
+.payment-modal h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.payment-modal input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.paystack-button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.paystack-button:hover {
+  background-color: #0056b3;
+}
+/* PaymentModal.css */
+
+.payment-container {
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    z-index: -3;
+}
+
+
+
+.payment-modal h2 {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.payment-modal input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.paystack-button {
+  background: linear-gradient(45deg, #6D00FF, #9F00FF);
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.paystack-button:hover {
+  background-color: #ad1827;
+}
+
+/* for transactions */
+.transaction-list{
+  border: 2px solid gray;
+  border-radius: 8px;
+  height: 460px;
+  overflow-y: scroll;
+  margin-top: 2rem;
+}
+.tx{
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  /* top: -70px; */
+  background: url('../public/5621625.jpg');
+  /* Image by <a href="https://www.freepik.com/free-photo/circles-squares-background-design_9590690.htm#query=background%20image%20design%20for%20web%20app&position=14&from_view=search&track=ais">Freepik</a> */
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: -3;
+}
+.tx .fixed-top{
+  border-radius: 8px;
+  width: 50%;
+  border-top: 2px solid gray; /* Top border */
+  border-left: 2px solid gray; /* Left border */
+  border-right: 2px solid gray; /* Right border */
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2); /* Adjust the values for a more noticeable shadow */
+}
+
+.bonus-boxes{
+  display: flex !important;
+  padding: 8px;
+  flex-direction: row;
+  border-radius: 4px;
+}
+.co-3{
+  flex: 3;
+}
+.co-4{
+  flex: 4;
+}
+
+
+
+/* Add these custom styles to your CSS file or in your component */
+.custom-card {
+  background-color: #B0C4DE; /* Card background color */
+  color: #ffffff; /* Text color */
+  border: none; /* Remove card border */
+  border-radius: 15px; /* Add border-radius for a rounded look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle box shadow */
+  transition: transform 0.3s ease-in-out; /* Add a smooth transition effect */
+}
+
+.custom-card:hover {
+  transform: scale(1.05); /* Scale the card on hover for a subtle interactive effect */
+}
+.scrollable-container {
+  width: 100%; /* Set the width of the container */
+  overflow-x: auto; /* Enable horizontal scrolling for the container */
+  white-space: nowrap; /* Prevent wrapping of content to new lines */
+}
+
+.scrollable-content {
+  display: inline-block; /* Make the content inline so it doesn't break onto new lines */
+  white-space: normal; /* Allow normal white space within the content */
+}
+.sm-text{
+  font-size: 12px;
+}
+
+/* Style the scrollbar */
+.scrollable-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 6px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+  border-radius: 6px;
+}
+@media(min-width: 1100px){
+  .bonus-boxes{
+    margin-top: -5%;
+  }
+}
+@media(min-width: 768px){
+  .custom-card{
+    margin-top: 90%;
+    height: 200px;
+  }
+}
+
+@media(min-width: 575px){
+  .modal{
+    top: 45%;
+    /* padding: 10px; */
+  }
+}
+
+
+
+@media(max-width: 500px){
+  .transaction-list{
+    margin-top: 3rem;
+    height: 500px;
+  }
+  .payment-modal{
+    margin-top: 35%;
+  }
+}
+
+@media(min-width: 498px){
+  .swipe-txt{
+    display: none !important;
+  }
+}
+@media(min-width: 498px) and (max-width: 768px){
+  .bonus-boxes{
+    flex-direction: column !important;
+    display: block !important;
+    border: 2px solid gray;
+    margin-top: 42%;
+    height: 200px;
+    overflow-y: scroll;
+  }
+  .custom-card{
+    width: 100% !important;
+  }
+}
+@media(max-width: 498px){
+  .bonus-boxes{
+    flex-direction: column !important;
+    margin-top: 50%;
+    border: 2px solid gray;
+    height: 200px;
+    overflow-y: scroll;
+  }
+}
+
+@media(max-width: 490px){
+  .bonus-boxes{
+    flex-direction: column !important;
+    margin-top: 62%;
+    border: 2px solid gray;
+    height: 200px;
+    overflow-y: scroll;
+  }
+}
+
+@media(max-width: 400px){
+  .bonus-boxes{
+    flex-direction: column !important;
+    margin-top: 80%;
+    border: 2px solid gray;
+    height: 200px;
+    overflow-y: scroll;
+  }
+}
+
+
+@media(max-width: 335px){
+  .wallet-balance-container{
+    overflow-y: scroll;
+  }
+  .wallet-balance{
+    flex-direction: column;
+  }
+  .bonus-boxes{
+    flex-direction: column !important;
+    margin-top: 108%;
+    border: 2px solid gray;
+    height: 180px;
+    overflow-y: scroll;
+  }
+  .custom-card{
+    text-align: center;
+  }
+  .card-title{
+    flex-direction: column;
+    display: block;
+  }
+}
+
+@media(max-width: 330px){
+  .transaction-details{
+    flex-direction: column;
+  }
+  .transaction-details span{
+    margin-top: 7px;
+  }
+  /* .bonus-boxes{
+    margin-top: 130%;
+  } */
+
+}
+
+@media(max-width: 315px){
+  .bonus-boxes{
+    margin-top: 125%;
+    height: 170px;
+  }
+}

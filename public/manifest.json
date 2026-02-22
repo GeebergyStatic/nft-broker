@@ -1,0 +1,35 @@
+{
+  "short_name": "Nexus fx",
+  "name": "Nexus fx investment blog",
+  "icons": [
+    {
+      "src": "./main_logo",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "./main_logo32",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "./main_logo64",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "./main_logo192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./main_logo512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

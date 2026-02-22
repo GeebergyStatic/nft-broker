@@ -1,0 +1,8 @@
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[build]
+  command = ""        # important: no build command
+  publish = "."       # or "build" if your HTML files are inside /build

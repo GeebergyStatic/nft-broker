@@ -1,0 +1,4 @@
+// Update the referring user's list of referred users.
+      await usersCollection.doc(referringUserId).update({
+        referredUsers: admin.firestore.FieldValue.arrayUnion(userId)
+    });

@@ -1,0 +1,12 @@
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# netlify.toml
+[build]
+command = "npm run build"
+publish = "build"
+
+[dev]
+command = "npm start"
