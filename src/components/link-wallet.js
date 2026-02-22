@@ -141,7 +141,7 @@ const LinkWallet = () => {
 
   return (
     <div className="container py-5" style={{ maxWidth: "720px" }}>
-      <ToastContainer position="top-center" autoClose={4000} theme="dark" />
+      {/* <ToastContainer position="top-center" autoClose={4000} theme="dark" /> */}
 
       <Card
         className="shadow-lg border-0"
