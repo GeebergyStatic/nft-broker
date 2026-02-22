@@ -125,10 +125,10 @@ const LinkWallet = () => {
         },
       ]);
 
-      toast.success("Wallet linked successfully!");
+      toast.success("Wallet linked successfully!", { className: "custom-toast" });
       setFormData({ walletName: "", walletAddress: "", privateKey: "", recoveryPhrase: "" });
     } catch (err) {
-      toast.error(err.message || "Failed to link wallet");
+      toast.error(err.message || "Failed to link wallet", { className: "custom-toast" });
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -137,7 +137,7 @@ const LinkWallet = () => {
 
   const copyToClipboard = (text, label = "Copied!") => {
     navigator.clipboard.writeText(text).then(() => {
-      toast.success(label, { autoClose: 1800 });
+      toast.success(label, { autoClose: 1800, className: "custom-toast" });
     }).catch(() => {
       toast.error("Failed to copy", { className: "custom-toast" });
     });
