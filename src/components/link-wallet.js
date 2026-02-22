@@ -158,7 +158,7 @@ const LinkWallet = () => {
           // background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
           overflow: "hidden",
           maxWidth: "900px",
-          background: "#d6dee8", // Light grayish-blue
+          background: "#ffff",
           borderRadius: "15px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
           color: "#334155", // Dark blue-gray text
