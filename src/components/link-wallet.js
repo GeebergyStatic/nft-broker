@@ -164,17 +164,30 @@ const LinkWallet = () => {
               {[metamaskLogo, trustWalletLogo, binanceLogo, coinbaseLogo].map((logo, i) => (
                 <div
                   key={i}
-                  className="wallet-logo-circle"
                   style={{
-                    width: 64,
-                    height: 64,
+                    width: 80,               // slightly bigger circle for breathing room
+                    height: 80,
                     borderRadius: "50%",
                     background: "white",
-                    boxShadow: "0 3px 10px rgba(0,0,0,0.08)",
-                    padding: 8,
+                    border: "1px solid #e2e8f0",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    display: "flex",         // ← key change
+                    alignItems: "center",    // vertical center
+                    justifyContent: "center",// horizontal center
+                    padding: 12,             // more padding → logos smaller inside
+                    overflow: "hidden",      // prevent overflow if needed
                   }}
                 >
-                  <img src={logo} alt="" style={{ width: "100%" }} />
+                  <img
+                    src={logo}
+                    alt="Wallet Logo"
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: "100%",
+                      objectFit: "contain",  // ← crucial: scales without cropping/distortion
+                      display: "block",
+                    }}
+                  />
                 </div>
               ))}
             </div>

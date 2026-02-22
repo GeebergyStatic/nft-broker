@@ -465,6 +465,15 @@ a {
   font-weight: bold;
 }
 
+.wallet-logo-circle img[src*="binance"] {
+  background: transparent !important;
+  mix-blend-mode: multiply;
+  /* helps if semi-white edges */
+  /* or */
+  filter: brightness(0) invert(1);
+  /* drastic — makes it white on dark, test carefully */
+}
+
 .copy-btn {
   /* background: #2ecc71; */
   color: #2ecc71;

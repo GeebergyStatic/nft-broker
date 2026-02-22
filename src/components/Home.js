@@ -143,43 +143,47 @@ function Home() {
         <div className='container'>
           {/* link wallet */}
           <div
-            className="d-flex align-items-center text-start main-container p-3 rounded"
+            className="d-flex align-items-center justify-content-between flex-wrap gap-3 p-4 rounded-4 shadow-lg mb-4"
             style={{
-              background: "linear-gradient(135deg, #6a11cb, #2575fc)",
-              color: "white",
-              borderRadius: "10px",
-              marginBottom: "2rem",
+              background: 'linear-gradient(135deg, #1e3a8a, #312e81)',
+              color: 'white',
+              borderRadius: '16px',
             }}
           >
-            {/* Image */}
-            <FontAwesomeIcon icon={faWallet} style={{
-              fontSize: "26px",
-              color: "white",
-              width: "35px",
-              height: "35px",
-              borderRadius: "10px",
-              marginRight: "15px",
-            }} />
+            <div className="d-flex align-items-center flex-grow-1 gap-3">
+              <div
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: '14px',
+                  background: 'rgba(255,255,255,0.15)',
+                  backdropFilter: 'blur(8px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  border: '1px solid rgba(255,255,255,0.2)',
+                }}
+              >
+                <FontAwesomeIcon icon={faWallet} style={{ fontSize: '26px', color: 'white' }} />
+              </div>
 
-            {/* Text Section */}
-            <div className="flex-grow-1">
-              <h5 className="mb-0">Link your wallet</h5>
-              <p className="d-none d-md-block" style={{ fontSize: "0.9rem", opacity: 0.8 }}>
-                Get access to your assets, which are held on your blockchain. A private key to that
-                address, which allows you to authorize transactions.
-              </p>
+              <div>
+                <h5 className="mb-1 fw-semibold">Link Your Wallet</h5>
+                <p className="mb-0" style={{ fontSize: '0.9rem', opacity: 0.9 }}>
+                  Connect to access your assets securely on the blockchain.
+                </p>
+              </div>
             </div>
 
-            {/* Connect Wallet Button */}
             <Button
               as={Link}
               to="/link-wallet"
+              variant="dark"
+              className="px-4 py-2 fw-medium shadow-sm"
               style={{
-                background: 'transparent',
-                border: "2px solid white",
-                borderRadius: "5px",
-                padding: "6px 15px",
-                fontWeight: "bold",
+                borderRadius: '10px',
+                minWidth: '160px',
               }}
             >
               Connect Wallet
