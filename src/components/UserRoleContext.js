@@ -56,7 +56,7 @@ export const UserProvider = ({ children }) => {
         }
       }, 15000);
 
-      const response = await fetch(`https://nft-broker-e3q7.onrender.com/api/userDetail/${userId}`, { signal });
+      const response = await fetch(`https://nft-broker-mroz.onrender.com/api/userDetail/${userId}`, { signal });
       // if fetch was aborted, this will either throw or be skipped; handle below
       if (!response.ok) {
         // For some statuses (e.g., 404) it doesn't make sense to keep retrying.

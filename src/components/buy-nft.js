@@ -25,7 +25,7 @@ const Buy = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `https://nft-broker-e3q7.onrender.com/api/fetch-agent-nfts/${agentCode}/${userId}`
+        `https://nft-broker-mroz.onrender.com/api/fetch-agent-nfts/${agentCode}/${userId}`
       );
       const data = await response.json();
       if (response.ok) {
@@ -80,7 +80,7 @@ const Buy = () => {
       };
 
       const response = await axios.post(
-        `https://nft-broker-e3q7.onrender.com/api/mint-nft`,
+        `https://nft-broker-mroz.onrender.com/api/mint-nft`,
         nftData
       );
 

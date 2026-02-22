@@ -77,7 +77,7 @@ const Dashboard = () => {
         try {
           const agentID = generateAgentID();
           const token = localStorage.getItem("token");
-          await fetch("https://nft-broker-e3q7.onrender.com/api/update-user", {
+          await fetch("https://nft-broker-mroz.onrender.com/api/update-user", {
             method: "PUT",
             headers: {
               "Content-Type": "application/json",

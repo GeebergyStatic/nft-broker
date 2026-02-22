@@ -15,7 +15,7 @@ const NftWithdrawList = () => { // Rename the function to start with an uppercas
   // Fetch pending artwork deposits
   const fetchPendingWithdrawals = async () => {
     try {
-      const response = await axios.get(`https://nft-broker-e3q7.onrender.com/api/pending-withdrawals/${agentID}`);
+      const response = await axios.get(`https://nft-broker-mroz.onrender.com/api/pending-withdrawals/${agentID}`);
       setNftWithdrawals(response.data);
     } catch (error) {
       console.log("Error fetching deposits: " + (error.response?.data?.message || error.message));
@@ -30,7 +30,7 @@ const NftWithdrawList = () => { // Rename the function to start with an uppercas
   const changePaymentStatus = async (transactionReference, status, txId) => {
     setIsLoading(true);
     try {
-      await axios.put(`https://nft-broker-e3q7.onrender.com/api/update-transaction/${transactionReference}`, { status });
+      await axios.put(`https://nft-broker-mroz.onrender.com/api/update-transaction/${transactionReference}`, { status });
       toast.success(`Transaction marked as ${status}!`);
       setIsLoading(false);
       setNftWithdrawals(nftWithdrawals.filter(tx => tx._id !== txId)); // Remove from UI after update

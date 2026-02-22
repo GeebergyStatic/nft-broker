@@ -19,7 +19,7 @@ const EditUserModal = ({ user, onClose, onUserUpdated }) => {
     setIsLoading(true);
     try {
       await axios.put(
-        `https://nft-broker-e3q7.onrender.com/api/users/${editedUser._id}`,
+        `https://nft-broker-mroz.onrender.com/api/users/${editedUser._id}`,
         editedUser
       );
       onUserUpdated();

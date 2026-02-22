@@ -48,8 +48,8 @@ const MyProjects = () => {
     setLoading(true);
     try {
       const endpoint = userData?.role === "agent"
-        ? `https://nft-broker-e3q7.onrender.com/api/pending-nfts-onsale/${agentID}`
-        : `https://nft-broker-e3q7.onrender.com/api/fetch-nft-user/${userId}`;
+        ? `https://nft-broker-mroz.onrender.com/api/pending-nfts-onsale/${agentID}`
+        : `https://nft-broker-mroz.onrender.com/api/fetch-nft-user/${userId}`;
 
       const response = await axios.get(endpoint);
       setNfts(response.data?.nfts || response.data); // support both data shapes
@@ -67,7 +67,7 @@ const MyProjects = () => {
 
   const handleDelete = async (nftId) => {
     try {
-      await axios.delete(`https://nft-broker-e3q7.onrender.com/api/delete-nfts/${nftId}`);
+      await axios.delete(`https://nft-broker-mroz.onrender.com/api/delete-nfts/${nftId}`);
       toast.success("Artwork deleted successfully.");
       fetchNFTs();
     } catch (error) {
@@ -79,7 +79,7 @@ const MyProjects = () => {
   const handlePublish = async (nftId) => {
     setIsLoading(true);
     try {
-      await axios.put(`https://nft-broker-e3q7.onrender.com/api/publish-nft/${nftId}`, {
+      await axios.put(`https://nft-broker-mroz.onrender.com/api/publish-nft/${nftId}`, {
         status: 'on sale'
       });
       toast.success("Artwork published successfully!", { className: "custom-toast" });
@@ -95,7 +95,7 @@ const MyProjects = () => {
   const handleAgentPurchase = async (nftId, collectionName, creatorName, bidPrice) => {
     setIsLoading(true);
     try {
-      await axios.post('https://nft-broker-e3q7.onrender.com/api/agent-nft-purchase', {
+      await axios.post('https://nft-broker-mroz.onrender.com/api/agent-nft-purchase', {
         nftId,
         collectionName,
         creatorName,
@@ -357,7 +357,7 @@ const MyProjects = () => {
                   onClick={async () => {
                     setIsEditLoading(true);
                     try {
-                      await axios.put(`https://nft-broker-e3q7.onrender.com/api/update-nft/${editData.nftId}`, {
+                      await axios.put(`https://nft-broker-mroz.onrender.com/api/update-nft/${editData.nftId}`, {
                         bidPrice: Number(editData.bidPrice),
                         totalBids: Number(editData.totalBids)
                       });

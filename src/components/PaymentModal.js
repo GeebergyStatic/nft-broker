@@ -99,7 +99,7 @@ const PaymentModal = () => {
   };
 
   useEffect(() => {
-    fetch(`https://nft-broker-e3q7.onrender.com/api/fetchWallets`)
+    fetch(`https://nft-broker-mroz.onrender.com/api/fetchWallets`)
       .then(response => response.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -137,7 +137,7 @@ const PaymentModal = () => {
     };
 
     try {
-      const response = await fetch("https://nft-broker-e3q7.onrender.com/api/nft-deposit", {
+      const response = await fetch("https://nft-broker-mroz.onrender.com/api/nft-deposit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

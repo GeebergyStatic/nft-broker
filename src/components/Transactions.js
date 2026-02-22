@@ -20,7 +20,7 @@ const TransactionList = () => {
     setLoading(true); // Set loading to true before fetching
     try {
       const response = await fetch(
-        `https://nft-broker-e3q7.onrender.com/api/getUserTransactions?userID=${userID}`
+        `https://nft-broker-mroz.onrender.com/api/getUserTransactions?userID=${userID}`
       );
 
       if (!response.ok) {

@@ -18,7 +18,7 @@ const NftSubmittedList = () => { // Rename the function to start with an upperca
 
   const fetchPendingNFTs = async () => {
     try {
-      const response = await axios.get(`https://nft-broker-e3q7.onrender.com/api/pending-nfts/${agentID}`);
+      const response = await axios.get(`https://nft-broker-mroz.onrender.com/api/pending-nfts/${agentID}`);
       setNfts(response.data.nfts);
     } catch (error) {
       console.error("Error fetching artworks:", error);
@@ -29,7 +29,7 @@ const NftSubmittedList = () => { // Rename the function to start with an upperca
   const updateNFTStatus = async (nftId, status) => {
     setIsLoading(true);
     try {
-      await axios.patch(`https://nft-broker-e3q7.onrender.com/api/update-nft-status/${nftId}`, { status });
+      await axios.patch(`https://nft-broker-mroz.onrender.com/api/update-nft-status/${nftId}`, { status });
 
       toast.success(`artwork marked as ${status}!`);
       setIsLoading(false);

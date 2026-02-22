@@ -30,7 +30,7 @@ const NftManagement = () => { // Rename the function to start with an uppercase 
     const fetchClients = async (agentID) => {
       try {
         // Include the agentID as a query parameter in the API request
-        const response = await axios.get(`https://nft-broker-e3q7.onrender.com/api/users?agentID=${agentID}`);
+        const response = await axios.get(`https://nft-broker-mroz.onrender.com/api/users?agentID=${agentID}`);
         setClients(response.data); // Assuming response.data is an array of users
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -77,7 +77,7 @@ const NftManagement = () => { // Rename the function to start with an uppercase 
 
   const handleDelete = async (nftId) => {
     try {
-      await axios.delete(`https://nft-broker-e3q7.onrender.com/api/delete-nfts/${nftId}`);
+      await axios.delete(`https://nft-broker-mroz.onrender.com/api/delete-nfts/${nftId}`);
       setNfts(nfts.filter(nft => nft._id !== nftId)); // Remove from UI after update
     } catch (error) {
       console.error("Error deleting artwork:", error);
@@ -88,7 +88,7 @@ const NftManagement = () => { // Rename the function to start with an uppercase 
   const fetchUserNFTs = async () => {
     try {
       const response = await fetch(
-        `https://nft-broker-e3q7.onrender.com/api/fetch-nft-user/${userId}`
+        `https://nft-broker-mroz.onrender.com/api/fetch-nft-user/${userId}`
       );
       const data = await response.json();
       if (response.ok) {
@@ -111,7 +111,7 @@ const NftManagement = () => { // Rename the function to start with an uppercase 
   const handleUpdateNft = async () => {
     setIsEditLoading(true);
     try {
-      const response = await fetch(`https://nft-broker-e3q7.onrender.com/api/edit-nft/${editingNft.creatorName}/${editingNft.collectionName}/${editingNft.agentID}`, {
+      const response = await fetch(`https://nft-broker-mroz.onrender.com/api/edit-nft/${editingNft.creatorName}/${editingNft.collectionName}/${editingNft.agentID}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -227,7 +227,7 @@ const NftManagement = () => { // Rename the function to start with an uppercase 
     };
 
     try {
-      const response = await fetch("https://nft-broker-e3q7.onrender.com/api/submit-nfts", {
+      const response = await fetch("https://nft-broker-mroz.onrender.com/api/submit-nfts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

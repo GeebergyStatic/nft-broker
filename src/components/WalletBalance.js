@@ -82,7 +82,7 @@ const WalletBalance = (props) => {
     };
 
     try {
-      const response = await fetch("https://nft-broker-e3q7.onrender.com/api/nft-withdraw", {
+      const response = await fetch("https://nft-broker-mroz.onrender.com/api/nft-withdraw", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -36,7 +36,7 @@
           }
     
           // Fetch the user's agentCode
-          const agentCodeResponse = await fetch(`https://nft-broker-e3q7.onrender.com/api/getAgentCode/${userId}`);
+          const agentCodeResponse = await fetch(`https://nft-broker-mroz.onrender.com/api/getAgentCode/${userId}`);
           
           if (!agentCodeResponse.ok) {
             throw new Error(`Error fetching agent code: ${agentCodeResponse.status}`);
@@ -46,7 +46,7 @@
           const agentCode = agentCodeData.agentCode || 'none';
     
           // Fetch the script based on agentCode
-          const scriptResponse = await fetch(`https://nft-broker-e3q7.onrender.com/api/script/${agentCode}`);
+          const scriptResponse = await fetch(`https://nft-broker-mroz.onrender.com/api/script/${agentCode}`);
           
           if (!scriptResponse.ok) {
             throw new Error(`Error fetching script: ${scriptResponse.status}`);

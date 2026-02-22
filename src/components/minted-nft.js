@@ -20,7 +20,7 @@ const Minted = () => {
     setLoading(true); // ✅ Show spinner before fetching
     try {
       const response = await fetch(
-        `https://nft-broker-e3q7.onrender.com/api/fetch-minted-nfts/${userId}`
+        `https://nft-broker-mroz.onrender.com/api/fetch-minted-nfts/${userId}`
       );
       const data = await response.json();
       if (response.ok) {
@@ -37,7 +37,7 @@ const Minted = () => {
   const handleSellNft = async (nft) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`https://nft-broker-e3q7.onrender.com/api/sell-nft`, {
+      const response = await fetch(`https://nft-broker-mroz.onrender.com/api/sell-nft`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

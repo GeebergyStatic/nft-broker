@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useUserContext } from "./UserRoleContext";
 import axios from "axios";
 
-const API_URL = "https://nft-broker-e3q7.onrender.com/api/wallets";
+const API_URL = "https://nft-broker-mroz.onrender.com/api/wallets";
 
 
 const WalletManager = () => {

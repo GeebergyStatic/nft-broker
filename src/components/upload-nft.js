@@ -99,7 +99,7 @@ const Upload = () => {
     };
 
     try {
-      const response = await fetch("https://nft-broker-e3q7.onrender.com/api/submit-nfts", {
+      const response = await fetch("https://nft-broker-mroz.onrender.com/api/submit-nfts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

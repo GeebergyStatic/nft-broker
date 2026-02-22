@@ -23,7 +23,7 @@ const UserManagement = () => {
     setIsLoading(true);
     try {
       // Include the agentID as a query parameter in the API request
-      const response = await axios.get(`https://nft-broker-e3q7.onrender.com/api/users?agentID=${agentID}`);
+      const response = await axios.get(`https://nft-broker-mroz.onrender.com/api/users?agentID=${agentID}`);
       setUsers(response.data); // Assuming response.data is an array of users
     } catch (error) {
       console.error('Error fetching users:', error);
